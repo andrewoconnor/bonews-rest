@@ -7,7 +7,8 @@
 
 (defn get-rows
   [table]
-  (for [tr (html/select table [:tr])
-    :let [cols (rest (html/select tr [:td]))]
-    :when (seq cols)]
-  {:row_num (str inc)  :content cols}))
+  (map-indexed vector
+    (for [tr (html/select table [:tr])
+      :let [cols (rest (html/select tr [:td]))]
+      :when (seq cols)]
+    [cols])))
