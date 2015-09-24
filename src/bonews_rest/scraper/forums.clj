@@ -15,10 +15,15 @@
       (utils/fetch-url)
       (html/select [:div#phorum :table])))
 
+(defn get-thread-author
+  [col]
+  (let [title-node (html/select col [[:a (html/attr? :href)]])]
+  (first (first (rest (last (last title-node)))))))
 
 (defn get-thread-title
   [col]
-  (html/select col [:h4 [:a (html/attr? :content)]]))
+  (let [title-node (html/select col [:h4 [:a (html/attr? :href)]])]
+  (first (first (rest (first (rest (rest (first title-node)))))))))
 
 (defn get-thread-url
   [col]
@@ -29,8 +34,9 @@
   [row]
   (let [cols (rest (html/select row [:td]))
         thread-title (get-thread-title (first cols))
-        thread-url (get-thread-url (first cols))]
-  {:url thread-url}))
+        thread-url (get-thread-url (first cols))
+        thread-author (get-thread-author (first cols))]
+  {:url thread-url :title thread-title :author thread-author}))
 
 (defn get-rows
   [table]
