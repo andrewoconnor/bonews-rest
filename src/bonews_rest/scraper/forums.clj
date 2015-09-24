@@ -15,6 +15,20 @@
       (utils/fetch-url)
       (html/select [:div#phorum :table])))
 
+(defn get-thread-num-replies
+  [col]
+  (let [replies (first (first (rest (first (rest (rest col))))))]
+  (Integer/parseInt replies)))
+
+(defn get-thread-last-update
+  [col]
+  (first (:content col)))
+
+(defn get-author-url
+  [col]
+  (let [title-node (html/select col [[:a (html/attr? :href)]])]
+  (:href (first (rest (first (rest (last title-node))))))))
+
 (defn get-thread-author
   [col]
   (let [title-node (html/select col [[:a (html/attr? :href)]])]
@@ -35,13 +49,21 @@
   (let [cols (rest (html/select row [:td]))
         thread-title (get-thread-title (first cols))
         thread-url (get-thread-url (first cols))
-        thread-author (get-thread-author (first cols))]
-  {:url thread-url :title thread-title :author thread-author}))
+        thread-last-update (get-thread-last-update (last cols))
+        thread-num-replies (get-thread-num-replies (first (rest cols)))
+        thread-author (get-thread-author (first cols))
+        author-url (get-author-url (first cols))]
+  {:thread-url thread-url
+   :thread-title thread-title
+   :thread-num-replies thread-num-replies
+   :thread-last-update thread-last-update
+   :author thread-author
+   :author-url author-url}))
 
 (defn get-rows
   [table]
   (map-indexed vector
-    (for [row (html/select table [:tr])
+    (for [row (rest (html/select table [:tr]))
       :let [cols (get-cols row)]
       :when (seq cols)]
     cols)))
