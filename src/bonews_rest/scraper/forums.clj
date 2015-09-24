@@ -15,12 +15,27 @@
       (utils/fetch-url)
       (html/select [:div#phorum :table])))
 
-(defn get-thread-rows
-  "Returns all rows in the threads table (except the header row)"
-  [table]
-  (utils/get-rows table))
 
-(defn get-thread-columns
-  "Returns all columns in the thread row (except the first spacer column)"
-  [rows]
-  ())
+(defn get-thread-title
+  [col]
+  (html/select col [:h4 [:a (html/attr? :content)]]))
+
+(defn get-thread-url
+  [col]
+  (let [title-node (html/select col [:h4 [:a (html/attr? :href)]])]
+  (first title-node)))
+
+(defn get-cols
+  [row]
+  (let [cols (rest (html/select row [:td]))
+        thread-title (get-thread-title (first cols))
+        thread-url (get-thread-url (first cols))]
+  {:url thread-url}))
+
+(defn get-rows
+  [table]
+  (map-indexed vector
+    (for [row (html/select table [:tr])
+      :let [cols (get-cols row)]
+      :when (seq cols)]
+    cols)))
