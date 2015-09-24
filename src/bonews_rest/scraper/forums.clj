@@ -23,7 +23,7 @@
 (defn get-thread-url
   [col]
   (let [title-node (html/select col [:h4 [:a (html/attr? :href)]])]
-  (first title-node)))
+  (:href (first (rest (first (rest (first title-node))))))))
 
 (defn get-cols
   [row]
