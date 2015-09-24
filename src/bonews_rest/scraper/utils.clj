@@ -8,6 +8,6 @@
 (defn get-rows
   [table]
   (for [tr (html/select table [:tr])
-    :let [row (html/select tr [:td])]
-    :when (seq row)]
-  [tr row]))
+    :let [cols (rest (html/select tr [:td]))]
+    :when (seq cols)]
+  {:row_num (str inc)  :content cols}))

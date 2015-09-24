@@ -23,7 +23,4 @@
 (defn get-thread-columns
   "Returns all columns in the thread row (except the first spacer column)"
   [rows]
-  (loop [row rows]
-   (format "row: %s" (apply str row))))
-  ;   (rest (html/select row [:td]))))
-  ;(rest (html/select rows [:td])))
+  ())
