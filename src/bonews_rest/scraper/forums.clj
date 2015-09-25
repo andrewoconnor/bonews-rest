@@ -46,19 +46,13 @@
 
 (defn get-cols
   [row]
-  (let [cols (rest (html/select row [:td]))
-        thread-title        (get-thread-title (first cols))
-        thread-url          (get-thread-url (first cols))
-        thread-last-update  (get-thread-last-update (last cols))
-        thread-num-replies  (get-thread-num-replies (first (rest cols)))
-        thread-author       (get-thread-author (first cols))
-        author-url          (get-author-url (first cols))]
-  {:thread-url          thread-url
-   :thread-title        thread-title
-   :thread-num-replies  thread-num-replies
-   :thread-last-update  thread-last-update
-   :author              thread-author
-   :author-url          author-url}))
+  (let [cols (rest (html/select row [:td]))]
+    {:thread-url            (get-thread-url (first cols))
+     :thread-title          (get-thread-title (first cols))
+     :thread-num-replies    (get-thread-num-replies (first (rest cols)))
+     :thread-last-update    (get-thread-last-update (last cols))
+     :author                (get-thread-author (first cols))
+     :author-url            (get-author-url (first cols))}))
 
 (defn get-rows
   [table]
