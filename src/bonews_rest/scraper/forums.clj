@@ -68,20 +68,35 @@
       (:attrs)
       (:href)))
 
-(defn get-cols
-  [row]
-  (let [cols (rest (html/select row [:td]))]
-    {:thread-url            (get-thread-url cols)
-     :thread-title          (get-thread-title cols)
-     :thread-num-replies    (get-thread-num-replies cols)
-     :thread-last-update    (get-thread-last-update cols)
-     :author                (get-thread-author cols)
-     :author-url            (get-author-url cols)}))
-
 (defn get-rows
   [table]
+  (-> table
+      (html/select [:tr])
+      rest))
+
+(defn get-cols
+  [row]
+  (-> row
+      (html/select [:td])
+      rest))
+
+(defn get-thread-data
+  [cols]
+  {
+    :thread-url            (get-thread-url cols)
+    :thread-title          (get-thread-title cols)
+    :thread-num-replies    (get-thread-num-replies cols)
+    :thread-last-update    (get-thread-last-update cols)
+    :author                (get-thread-author cols)
+    :author-url            (get-author-url cols)
+  })
+
+(defn get-page-data
+  [table]
   (map-indexed vector
-    (for [row (rest (html/select table [:tr]))
-      :let [cols (get-cols row)]
-      :when (seq cols)]
-    cols)))
+    (for [row (get-rows table)
+      :let [page-data (-> row
+                          (get-cols)
+                          (get-thread-data))]
+      :when (seq page-data)]
+    page-data)))
