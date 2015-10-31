@@ -3,6 +3,8 @@
             [net.cgrand.enlive-html :as html]))
 
 (def bugs-subforum-url "http://bo-ne.ws/forum/list.php?25")
+(def link-href [[:a (html/attr? :href)]])
+(def link-label [:h4 [:a (html/attr? :href)]])
 
 (defn url-by-page
   "Construct URL for a single page of a subforum"
@@ -17,41 +19,64 @@
 
 (defn get-thread-num-replies
   [col]
-  (Integer/parseInt (first (:content col))))
+  (-> col
+      fnext
+      (:content)
+      first
+      Integer/parseInt))
 
 (defn get-thread-last-update
   [col]
-  (first (:content col)))
+  (-> col
+      last
+      (:content)
+      first))
 
 (defn get-author-url
   [col]
-  (let [title-node (html/select col [[:a (html/attr? :href)]])]
-  (:href (:attrs (last title-node)))))
+  (-> col
+      first
+      (html/select link-href)
+      last
+      (:attrs)
+      (:href)))
 
 (defn get-thread-author
   [col]
-  (let [title-node (html/select col [[:a (html/attr? :href)]])]
-  (first (:content (last title-node)))))
+  (-> col
+      first
+      (html/select link-href)
+      last
+      (:content)
+      first))
 
 (defn get-thread-title
   [col]
-  (let [title-node (html/select col [:h4 [:a (html/attr? :href)]])]
-  (first (:content (first title-node)))))
+  (-> col
+      first
+      (html/select link-label)
+      first
+      (:content)
+      first))
 
 (defn get-thread-url
   [col]
-  (let [title-node (html/select col [:h4 [:a (html/attr? :href)]])]
-  (:href (:attrs (first title-node)))))
+  (-> col
+      first
+      (html/select link-label)
+      first
+      (:attrs)
+      (:href)))
 
 (defn get-cols
   [row]
   (let [cols (rest (html/select row [:td]))]
-    {:thread-url            (get-thread-url (first cols))
-     :thread-title          (get-thread-title (first cols))
-     :thread-num-replies    (get-thread-num-replies (fnext cols))
-     :thread-last-update    (get-thread-last-update (last cols))
-     :author                (get-thread-author (first cols))
-     :author-url            (get-author-url (first cols))}))
+    {:thread-url            (get-thread-url cols)
+     :thread-title          (get-thread-title cols)
+     :thread-num-replies    (get-thread-num-replies cols)
+     :thread-last-update    (get-thread-last-update cols)
+     :author                (get-thread-author cols)
+     :author-url            (get-author-url cols)}))
 
 (defn get-rows
   [table]
