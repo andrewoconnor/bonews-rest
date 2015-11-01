@@ -1,40 +1,49 @@
 (ns bonews-rest.scraper.forums
   (:require [bonews-rest.scraper.utils :as utils]
-            [net.cgrand.enlive-html :as html]))
+            [net.cgrand.enlive-html :as html]
+            [clj-time.core :as t]
+            [clj-time.format :as f]))
 
-(def bugs-subforum-url "http://bo-ne.ws/forum/list.php?25")
+(def list-threads-url "http://bo-ne.ws/forum/list.php?")
+
+(def bugs-subforum-id 25)
+(def movies-subforum-id 14)
+
 (def link-href [[:a (html/attr? :href)]])
 (def link-label [:h4 [:a (html/attr? :href)]])
 
+(def custom-formatter (f/formatter "MM/dd/yyyy hh:mmaa"))
+
 (defn url-by-page
   "Construct URL for a single page of a subforum"
-  [subforum page]
-  (str subforum ",page=" page))
+  [subforum-id page]
+  (str list-threads-url subforum-id ",page=" page))
 
-(defn get-thread-table
+(defn get-threads-table
   [subforum page]
   (-> (url-by-page subforum page)
       (utils/fetch-url)
       (html/select [:div#phorum :table])))
 
 (defn get-thread-num-replies
-  [col]
-  (-> col
+  [cols]
+  (-> cols
       fnext
       (:content)
       first
       Integer/parseInt))
 
 (defn get-thread-last-update
-  [col]
-  (-> col
-      last
-      (:content)
-      first))
+  [cols]
+  (->> cols
+       last
+       (:content)
+       first
+       (f/parse custom-formatter)))
 
 (defn get-author-url
-  [col]
-  (-> col
+  [cols]
+  (-> cols
       first
       (html/select link-href)
       last
@@ -42,8 +51,8 @@
       (:href)))
 
 (defn get-thread-author
-  [col]
-  (-> col
+  [cols]
+  (-> cols
       first
       (html/select link-href)
       last
@@ -51,8 +60,8 @@
       first))
 
 (defn get-thread-title
-  [col]
-  (-> col
+  [cols]
+  (-> cols
       first
       (html/select link-label)
       first
@@ -60,8 +69,8 @@
       first))
 
 (defn get-thread-url
-  [col]
-  (-> col
+  [cols]
+  (-> cols
       first
       (html/select link-label)
       first
@@ -91,7 +100,7 @@
     :author-url            (get-author-url cols)
   })
 
-(defn get-page-data
+(defn get-threads-data
   [table]
   (map-indexed vector
     (for [row (get-rows table)
