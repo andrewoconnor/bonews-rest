@@ -1,8 +1,8 @@
 (ns bonews-rest.scraper.subforums
   (:require [bonews-rest.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
-            [clj-time.core :as t]
-            [clj-time.format :as f]))
+            [guangyin.core :as t]
+            [guangyin.format :as f]))
 
 (def list-threads-url "http://bo-ne.ws/forum/list.php?")
 
@@ -12,7 +12,7 @@
 (def link-href [[:a (html/attr? :href)]])
 (def link-label [:h4 [:a (html/attr? :href)]])
 
-(def custom-formatter (f/formatter "MM/dd/yyyy hh:mmaa"))
+(def custom-formatter (f/date-time-formatter "MM/dd/yyyy hh:mma"))
 
 (defn url-by-page
   "Construct URL for a single page of a subforum"
@@ -35,11 +35,11 @@
 
 (defn get-thread-last-update
   [cols]
-  (->> cols
+  (-> cols
        last
        (:content)
        first
-       (f/parse custom-formatter)))
+       (t/local-date-time custom-formatter)))
 
 (defn get-author-url
   [cols]

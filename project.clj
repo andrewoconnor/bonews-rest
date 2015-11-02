@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [enlive "1.1.6"]
-                 [clj-time "0.11.0"]]
+                 [guangyin "0.3.0"]]
   :main ^:skip-aot bonews-rest.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
