@@ -10,4 +10,5 @@
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
   :injections [(require 'bonews-rest.scraper.utils)
-               (require 'bonews-rest.scraper.forums)])
+               (require 'bonews-rest.scraper.forums)
+               (require 'bonews-rest.scraper.subforums)])
