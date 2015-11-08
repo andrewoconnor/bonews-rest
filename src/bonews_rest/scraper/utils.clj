@@ -34,6 +34,12 @@
       (:attrs)
       (:href)))
 
+(defn get-author-id
+  [author-id]
+  (-> author-id
+      (str/split #"\,")
+      second))
+
 (defn get-rows
   [table]
   (-> table

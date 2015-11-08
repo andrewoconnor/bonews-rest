@@ -81,8 +81,9 @@
 
 (defn get-thread-data
   [cols]
-  (let [thread-url (get-thread-url cols)
-        thread-suffix (get-thread-suffix thread-url)]
+  (let [thread-url    (get-thread-url cols)
+        thread-suffix (get-thread-suffix thread-url)
+        author-url    (utils/get-author-url cols)]
     {
       :thread-title          (get-thread-title cols)
       :thread-url            thread-url
@@ -91,5 +92,6 @@
       :thread-last-update    (get-thread-last-update cols)
       :subforum-id           (get-subforum-id thread-suffix)
       :author-name           (utils/get-author-name cols)
-      :author-url            (utils/get-author-url cols)
+      :author-url            author-url
+      :author-id             (utils/get-author-id author-url)
     }))

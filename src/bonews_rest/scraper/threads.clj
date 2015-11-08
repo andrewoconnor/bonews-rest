@@ -56,14 +56,23 @@
       first
       (t/local-date-time custom-formatter)))
 
+(defn get-thread-id
+  [reply-url]
+  (-> reply-url
+      (str/split #"\,")
+      second))
+
 (defn get-replies-data
   [cols]
-  (let [reply-url (get-reply-url cols)]
+  (let [reply-url  (get-reply-url cols)
+        author-url (utils/get-author-url cols)]
     {
-      :reply-title           (get-reply-title cols)
-      :reply-url             reply-url
-      :reply-id              (get-reply-id reply-url)
-      :reply-post-time       (get-reply-post-time cols)
-      :author-name           (utils/get-author-name cols)
-      :author-url            (utils/get-author-url cols)
+      :reply-title        (get-reply-title cols)
+      :reply-url          reply-url
+      :reply-id           (get-reply-id reply-url)
+      :reply-post-time    (get-reply-post-time cols)
+      :thread-id          (get-thread-id reply-url)
+      :author-name        (utils/get-author-name cols)
+      :author-url         author-url
+      :author-id          (utils/get-author-id author-url)
     }))
