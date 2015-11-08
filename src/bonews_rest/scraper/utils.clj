@@ -1,9 +1,38 @@
 (ns bonews-rest.scraper.utils
-  (:require [net.cgrand.enlive-html :as html]))
+  (:require [net.cgrand.enlive-html :as html]
+            [clojure.string :as str]))
+
+(def link-href [[:a (html/attr? :href)]])
+(def link-label [:h4 [:a (html/attr? :href)]])
 
 (defn fetch-url
   [url]
   (html/html-resource (java.net.URL. url)))
+
+(defn parse-num-with-comma
+  [num-with-comma]
+  (-> num-with-comma
+      (str/trim)
+      (str/replace "," "")
+      (Integer/parseInt)))
+
+(defn get-author-name
+  [cols]
+  (-> cols
+      second
+      (html/select link-href)
+      last
+      (:content)
+      first))
+
+(defn get-author-url
+  [cols]
+  (-> cols
+      second
+      (html/select link-href)
+      last
+      (:attrs)
+      (:href)))
 
 (defn get-rows
   [table]

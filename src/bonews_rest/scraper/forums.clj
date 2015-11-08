@@ -37,9 +37,8 @@
       (:href)))
 
 (defn get-subforum-id
-  [cols]
-  (-> cols
-      (get-subforum-url)
+  [subforum-url]
+  (-> subforum-url
       (str/split #"\?")
       second
       Integer/parseInt))
@@ -50,33 +49,32 @@
       fnext
       (:content)
       first
-      (str/trim)
-      (str/replace "," "")
-      Integer/parseInt))
+      (utils/parse-num-with-comma)))
 
 (defn get-subforum-num-posts
   [cols]
-  (-> (nth cols 2)
+  (-> cols
+      (nth 2)
       (:content)
       first
-      (str/trim)
-      (str/replace "," "")
-      Integer/parseInt))
+      (utils/parse-num-with-comma)))
 
 (defn get-subforum-last-update
   [cols]
-  (-> (nth cols 3)
+  (-> cols
+      (nth 3)
       (:content)
       first
       (t/local-date-time custom-formatter)))
 
 (defn get-subforum-data
   [cols]
-  {
-    :subforum-name         (get-subforum-name cols)
-    :subforum-url          (get-subforum-url cols)
-    :subforum-id           (get-subforum-id cols)
-    :subforum-num-topics   (get-subforum-num-topics cols)
-    :subforum-num-posts    (get-subforum-num-posts cols)
-    :subforum-last-update  (get-subforum-last-update cols)
-  })
+  (let [subforum-url (get-subforum-url cols)]
+    {
+      :subforum-name           (get-subforum-name cols)
+      :subforum-url            subforum-url
+      :subforum-id             (get-subforum-id subforum-url)
+      :subforum-num-topics     (get-subforum-num-topics cols)
+      :subforum-num-posts      (get-subforum-num-posts cols)
+      :subforum-last-update    (get-subforum-last-update cols)
+    }))
