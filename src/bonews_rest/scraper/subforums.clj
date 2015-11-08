@@ -28,7 +28,7 @@
 (defn get-thread-num-replies
   [cols]
   (-> cols
-      fnext
+      (nth 2)
       (:content)
       first
       Integer/parseInt))
@@ -36,15 +36,15 @@
 (defn get-thread-last-update
   [cols]
   (-> cols
-       last
-       (:content)
-       first
-       (t/local-date-time custom-formatter)))
+      last
+      (:content)
+      first
+      (t/local-date-time custom-formatter)))
 
 (defn get-author-url
   [cols]
   (-> cols
-      first
+      second
       (html/select link-href)
       last
       (:attrs)
@@ -53,7 +53,7 @@
 (defn get-thread-author
   [cols]
   (-> cols
-      first
+      second
       (html/select link-href)
       last
       (:content)
@@ -62,7 +62,7 @@
 (defn get-thread-title
   [cols]
   (-> cols
-      first
+      second
       (html/select link-label)
       first
       (:content)
@@ -71,23 +71,11 @@
 (defn get-thread-url
   [cols]
   (-> cols
-      first
+      second
       (html/select link-label)
       first
       (:attrs)
       (:href)))
-
-(defn get-rows
-  [table]
-  (-> table
-      (html/select [:tr])
-      rest))
-
-(defn get-cols
-  [row]
-  (-> row
-      (html/select [:td])
-      rest))
 
 (defn get-thread-data
   [cols]
@@ -99,13 +87,3 @@
     :author                (get-thread-author cols)
     :author-url            (get-author-url cols)
   })
-
-(defn get-threads-data
-  [table]
-  (map-indexed vector
-    (for [row (get-rows table)
-      :let [threads-data (-> row
-                          (get-cols)
-                          (get-thread-data))]
-      :when (seq threads-data)]
-    threads-data)))

@@ -70,17 +70,6 @@
       first
       (t/local-date-time custom-formatter)))
 
-(defn get-rows
-  [table]
-  (-> table
-      (html/select [:tr])
-      rest))
-
-(defn get-cols
-  [row]
-  (-> row
-      (html/select [:td])))
-
 (defn get-subforum-data
   [cols]
   {
@@ -91,13 +80,3 @@
     :subforum-num-posts    (get-subforum-num-posts cols)
     :subforum-last-update  (get-subforum-last-update cols)
   })
-
-(defn get-subforums-data
-  [table]
-  (map-indexed vector
-    (for [row (get-rows table)
-      :let [subforums-data (-> row
-                              (get-cols)
-                              (get-subforum-data))]
-      :when (seq subforums-data)]
-    subforums-data)))
