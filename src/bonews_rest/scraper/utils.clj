@@ -9,6 +9,10 @@
   [url]
   (html/html-resource (java.net.URL. url)))
 
+(defn parse-page-source
+  [page-source]
+  (html/html-resource (java.io.StringReader. page-source)))
+
 (defn parse-num-with-comma
   [num-with-comma]
   (-> num-with-comma
