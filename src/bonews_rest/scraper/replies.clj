@@ -46,8 +46,8 @@
 
 (defn get-reply-data
   [reply-div]
-  (let [upvotes (get-upvotes-col reply-div)
-        downvotes (get-downvotes-col reply-div)]
+  (let [upvotes    (get-upvotes-col reply-div)
+        downvotes  (get-downvotes-col reply-div)]
   {
     :reply-message          (get-reply-message reply-div)
     :reply-num-upvotes      (get-num-votes upvotes)
