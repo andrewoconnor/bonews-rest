@@ -56,9 +56,9 @@
       (html/select [:td])))
 
 (defn get-data
-  [get-table type-of-data]
+  [table type-of-data]
   (map-indexed vector
-    (for [row (get-rows get-table)
+    (for [row (get-rows table)
       :let [data (-> row
                     (get-cols)
                     (type-of-data))]
