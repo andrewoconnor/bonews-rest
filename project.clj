@@ -15,4 +15,5 @@
                (require 'bonews-rest.scraper.forums)
                (require 'bonews-rest.scraper.subforums)
                (require 'bonews-rest.scraper.threads)
-               (require 'bonews-rest.scraper.bulbs)])
+               (require 'bonews-rest.scraper.bulbs)
+               (require 'bonews-rest.scraper.signatures)])
