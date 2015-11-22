@@ -20,7 +20,7 @@
       (str/replace "," "")
       (Integer/parseInt)))
 
-(defn get-author-name
+(defn get-username
   [cols]
   (-> cols
       second
@@ -29,7 +29,7 @@
       (:content)
       first))
 
-(defn get-author-url
+(defn get-user-url
   [cols]
   (-> cols
       second
@@ -38,11 +38,12 @@
       (:attrs)
       (:href)))
 
-(defn get-author-id
-  [author-id]
-  (-> author-id
+(defn get-user-id
+  [user-url]
+  (-> user-url
       (str/split #"\,")
-      second))
+      second
+      (Integer/parseInt)))
 
 (defn get-rows
   [table]
@@ -57,7 +58,7 @@
 
 (defn get-data
   [table type-of-data]
-  (map-indexed vector
+  (seq
     (for [row (get-rows table)
       :let [data (-> row
                     (get-cols)

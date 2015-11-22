@@ -47,10 +47,11 @@
 
 (defn get-vote-data
   [list-item]
-  {
-    :username (get-username list-item)
-    :userid   (get-userid   list-item)
-  })
+  (get-userid list-item))
+  ; {
+  ;   :username (get-username list-item)
+  ;   :userid   (get-userid   list-item)
+  ; })
 
 (defn get-list-items
   [ulist]
@@ -60,10 +61,10 @@
 
 (defn votes-helper
   [ulist]
-  (map-indexed vector
+  (seq
     (for [list-item (get-list-items ulist)
-      :let [data (get-vote-data list-item)]
-      :when (seq data)]
+      :let [data (get-vote-data list-item)]]
+      ; :when (seq data)]
     data)))
 
 (defn get-votes-data
@@ -71,7 +72,7 @@
   (let [upvotes-list    (get-upvotes-list   reply-page)
         downvotes-list  (get-downvotes-list reply-page)]
     {
-      :upvotes   (seq (votes-helper upvotes-list))
-      :downvotes (seq (votes-helper downvotes-list))
+      :upvotes   (votes-helper upvotes-list)
+      :downvotes (votes-helper downvotes-list)
     }))
 

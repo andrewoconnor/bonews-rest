@@ -46,7 +46,8 @@
   [reply-url]
   (-> reply-url
       (str/split #"\-")
-      last))
+      last
+      (Integer/parseInt)))
 
 (defn get-reply-post-time
   [cols]
@@ -60,19 +61,68 @@
   [reply-url]
   (-> reply-url
       (str/split #"\,")
-      second))
+      second
+      (Integer/parseInt)))
+
+(defn get-thread-data
+  [rows thread-id]
+  {
+    :id thread-id
+    :replies 
+      (seq 
+        (for [row rows
+          :let [cols        (utils/get-cols  row)
+                reply-url   (get-reply-url   cols)
+                replies     (get-reply-id    reply-url)]]
+      replies))
+  }
+)
 
 (defn get-replies-data
-  [cols]
-  (let [reply-url  (get-reply-url cols)
-        author-url (utils/get-author-url cols)]
+  [rows]
+  (seq 
+    (for [row rows
+      :let [cols       (utils/get-cols      row)
+            reply-url  (get-reply-url       cols)
+            user-url   (utils/get-user-url  cols)
+            replies    {
+                        :id         (get-reply-id         reply-url)
+                        :title      (get-reply-title      cols)
+                        :url        reply-url
+                        :post-time  (get-reply-post-time  cols)
+                        :user       (utils/get-user-id    user-url)}]]
+    replies)))
+
+(defn get-users-data
+  [rows]
+  (distinct 
+    (seq
+      (for [row rows
+        :let [cols       (utils/get-cols      row)
+              reply-url  (get-reply-url       cols)
+              user-url   (utils/get-user-url  cols)
+              users      {
+                          :id    (utils/get-user-id   user-url)
+                          :name  (utils/get-username  cols)
+                          :url   user-url}]]
+      users))))
+
+(defn get-data
+  ([url]
+    (let [table      (get-replies-table  url)
+          rows       (utils/get-rows     table)
+          thread-id  (get-thread-id      url)]
     {
-      :reply-title        (get-reply-title cols)
-      :reply-url          reply-url
-      :reply-id           (get-reply-id reply-url)
-      :reply-post-time    (get-reply-post-time cols)
-      :thread-id          (get-thread-id reply-url)
-      :author-name        (utils/get-author-name cols)
-      :author-url         author-url
-      :author-id          (utils/get-author-id author-url)
+      :thread   (get-thread-data   rows thread-id)
+      :replies  (get-replies-data  rows)
+      :users    (get-users-data    rows)
     }))
+  ([subforum-id thread-id]
+    (let [url    (get-thread-url     subforum-id thread-id)
+          table  (get-replies-table  url)
+          rows   (utils/get-rows     table)]
+    {
+      :thread   (get-thread-data   rows thread-id)
+      :replies  (get-replies-data  rows)
+      :users    (get-users-data    rows)
+    })))
