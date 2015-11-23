@@ -83,7 +83,7 @@
   [cols]
   (let [thread-url    (get-thread-url cols)
         thread-suffix (get-thread-suffix thread-url)
-        author-url    (utils/get-author-url cols)]
+        author-url    (utils/get-user-url cols)]
     {
       :thread-title          (get-thread-title cols)
       :thread-url            thread-url
@@ -91,7 +91,7 @@
       :thread-num-replies    (get-thread-num-replies cols)
       :thread-last-update    (get-thread-last-update cols)
       :subforum-id           (get-subforum-id thread-suffix)
-      :author-name           (utils/get-author-name cols)
+      :author-name           (utils/get-username cols)
       :author-url            author-url
-      :author-id             (utils/get-author-id author-url)
+      :author-id             (utils/get-user-id author-url)
     }))

@@ -45,11 +45,12 @@
       (html/select [:td#bo_knows_bulbs_vote_up])))
 
 (defn get-reply-data
-  [reply-div]
-  (let [upvotes    (get-upvotes-col reply-div)
+  [reply-url]
+  (let [reply-div  (get-reply-div reply-url)
+        upvotes    (get-upvotes-col reply-div)
         downvotes  (get-downvotes-col reply-div)]
-  {
-    :reply-message          (get-reply-message reply-div)
-    :reply-num-upvotes      (get-num-votes upvotes)
-    :reply-num-downvotes    (get-num-votes downvotes)
-  }))
+  (get-reply-message reply-div)))
+  ; {
+    ; :reply-num-upvotes      (get-num-votes upvotes)
+    ; :reply-num-downvotes    (get-num-votes downvotes)
+  ; }))

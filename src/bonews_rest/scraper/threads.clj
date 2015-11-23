@@ -1,5 +1,7 @@
 (ns bonews-rest.scraper.threads
   (:require [bonews-rest.scraper.utils :as utils]
+            [bonews-rest.scraper.replies :as br]
+            [bonews-rest.scraper.bulbs :as bulbs]
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
             [guangyin.format :as f]
@@ -88,6 +90,8 @@
             replies    {
                         :id         (get-reply-id         reply-url)
                         :title      (get-reply-title      cols)
+                        ; :body       (br/get-reply-data    reply-url)
+                        :bulbs      (bulbs/get-data       reply-url)
                         :url        reply-url
                         :post-time  (get-reply-post-time  cols)
                         :user       (utils/get-user-id    user-url)}]]

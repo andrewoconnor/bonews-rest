@@ -5,16 +5,24 @@
 
 (def link-href [[:a (html/attr? :href)]])
 
-(defn get-reply-page
+; (defn get-reply-page
+;   [reply-url]
+;   (web/set-driver! {:browser :firefox} reply-url)
+;   (web/to reply-url)
+;   (web/click "input.bo_knows_bulbs_view_votes")
+;   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters"))
+;   (let [reply-page (utils/parse-page-source (web/page-source))]
+;     (web/close)
+;     reply-page
+;   ))
+
+(defn get-page-source
   [reply-url]
   (web/set-driver! {:browser :firefox} reply-url)
   (web/to reply-url)
   (web/click "input.bo_knows_bulbs_view_votes")
   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters"))
-  (let [reply-page (utils/parse-page-source (web/page-source))]
-    (web/close)
-    reply-page
-  ))
+  (utils/parse-page-source (web/page-source)))
 
 (defn get-username
   [list-item]
@@ -24,7 +32,7 @@
       (:content)
       first))
 
-(defn get-userid
+(defn get-user-id
   [list-item]
   (-> list-item
       (:content)
@@ -33,7 +41,18 @@
       first
       (:attrs)
       (:href)
-      (utils/get-author-id)))
+      (utils/get-user-id)))
+
+(defn get-user-url
+  [list-item]
+  (str "http://bo-ne.ws/forum/"
+    (-> list-item
+        (:content)
+        first
+        (html/select link-href)
+        first
+        (:attrs)
+        (:href))))
 
 (defn get-upvotes-list
   [reply-page]
@@ -47,11 +66,7 @@
 
 (defn get-vote-data
   [list-item]
-  (get-userid list-item))
-  ; {
-  ;   :username (get-username list-item)
-  ;   :userid   (get-userid   list-item)
-  ; })
+  (get-user-id list-item))
 
 (defn get-list-items
   [ulist]
@@ -59,20 +74,52 @@
       (html/select [:li])
       rest))
 
+(defn user-helper
+  [list-item]
+  {
+    :id    (get-user-id   list-item)
+    :name  (get-username  list-item)
+    :url   (get-user-url  list-item)
+  })
+
+(defn get-user-data
+  [upvotes-list downvotes-list]
+  (distinct (concat 
+    (for [list-item (get-list-items upvotes-list)
+      :let [data (user-helper list-item)]]
+    data)
+    (for [list-item (get-list-items downvotes-list)
+      :let [data (user-helper list-item)]]
+    data))))
+
 (defn votes-helper
   [ulist]
   (seq
     (for [list-item (get-list-items ulist)
       :let [data (get-vote-data list-item)]]
-      ; :when (seq data)]
     data)))
 
 (defn get-votes-data
   [reply-page]
   (let [upvotes-list    (get-upvotes-list   reply-page)
         downvotes-list  (get-downvotes-list reply-page)]
-    {
-      :upvotes   (votes-helper upvotes-list)
-      :downvotes (votes-helper downvotes-list)
-    }))
+    (-> {
+          :bulbs {
+            :upvotes {
+              :users (votes-helper upvotes-list)
+            }
+            :downvotes {
+              :users (votes-helper downvotes-list)
+            }
+          }
+          :users (get-user-data upvotes-list downvotes-list)
+        }
+        (utils/remove-nils))))
+
+
+(defn get-data
+  [reply-url]
+  (-> reply-url
+      (get-page-source)
+      (get-votes-data)))
 
