@@ -5,7 +5,8 @@
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
             [guangyin.format :as f]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clj-webdriver.taxi :as web]))
 
 (def url-prefix "http://bo-ne.ws/forum/read.php?")
 
@@ -88,13 +89,13 @@
             reply-url  (get-reply-url       cols)
             user-url   (utils/get-user-url  cols)
             replies    {
-                        :id         (get-reply-id         reply-url)
-                        :title      (get-reply-title      cols)
+                        :id         (get-reply-id          reply-url)
+                        :title      (get-reply-title       cols)
                         ; :body       (br/get-reply-data    reply-url)
-                        :bulbs      (bulbs/get-data       reply-url)
+                        :bulbs      (bulbs/get-data        reply-url)
                         :url        reply-url
-                        :post-time  (get-reply-post-time  cols)
-                        :user       (utils/get-user-id    user-url)}]]
+                        :post-time  @(get-reply-post-time  cols)
+                        :user       (utils/get-user-id user-url)}]]
     replies)))
 
 (defn get-users-data
@@ -113,20 +114,26 @@
 
 (defn get-data
   ([url]
-    (let [table      (get-replies-table  url)
-          rows       (utils/get-rows     table)
-          thread-id  (get-thread-id      url)]
-    {
-      :thread   (get-thread-data   rows thread-id)
-      :replies  (get-replies-data  rows)
-      :users    (get-users-data    rows)
-    }))
+    (let [table       (get-replies-table  url)
+          rows        (utils/get-rows     table)
+          thread-id   (get-thread-id      url)
+          replies     (get-replies-data   rows)]
+      
+      {
+        :thread   (get-thread-data   rows thread-id)
+        :replies  replies
+        :users    (distinct (conj (get-users-data rows) (flatten
+                    (filter (comp not empty?) 
+                      (for [reply replies
+                        :let [users (:users (:bulbs reply))]]
+                      users)))))
+      }))
   ([subforum-id thread-id]
     (let [url    (get-thread-url     subforum-id thread-id)
           table  (get-replies-table  url)
           rows   (utils/get-rows     table)]
-    {
-      :thread   (get-thread-data   rows thread-id)
-      :replies  (get-replies-data  rows)
-      :users    (get-users-data    rows)
-    })))
+      {
+        :thread   (get-thread-data   rows thread-id)
+        :replies  (get-replies-data  rows)
+        :users    (get-users-data    rows)
+      })))

@@ -5,24 +5,16 @@
 
 (def link-href [[:a (html/attr? :href)]])
 
-; (defn get-reply-page
-;   [reply-url]
-;   (web/set-driver! {:browser :firefox} reply-url)
-;   (web/to reply-url)
-;   (web/click "input.bo_knows_bulbs_view_votes")
-;   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters"))
-;   (let [reply-page (utils/parse-page-source (web/page-source))]
-;     (web/close)
-;     reply-page
-;   ))
-
 (defn get-page-source
   [reply-url]
   (web/set-driver! {:browser :firefox} reply-url)
   (web/to reply-url)
   (web/click "input.bo_knows_bulbs_view_votes")
   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters"))
-  (utils/parse-page-source (web/page-source)))
+  (let [reply-page (utils/parse-page-source (web/page-source))]
+    (web/close)
+    reply-page
+  ))
 
 (defn get-username
   [list-item]
@@ -104,22 +96,26 @@
   (let [upvotes-list    (get-upvotes-list   reply-page)
         downvotes-list  (get-downvotes-list reply-page)]
     (-> {
-          :bulbs {
-            :upvotes {
-              :users (votes-helper upvotes-list)
-            }
-            :downvotes {
-              :users (votes-helper downvotes-list)
-            }
+          :upvotes {
+            :users (votes-helper upvotes-list)
+          }
+          :downvotes {
+            :users (votes-helper downvotes-list)
           }
           :users (get-user-data upvotes-list downvotes-list)
-        }
-        (utils/remove-nils))))
+        })))
 
+(defn has-bulbs
+  [reply-url]
+  (-> reply-url
+      (utils/fetch-url)
+      (html/select [:input.bo_knows_bulbs_view_votes])))
 
 (defn get-data
   [reply-url]
-  (-> reply-url
-      (get-page-source)
-      (get-votes-data)))
-
+  (if (empty? (has-bulbs reply-url))
+    nil
+    (-> reply-url
+        get-page-source
+        get-votes-data
+        utils/remove-nils)))
