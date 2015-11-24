@@ -95,7 +95,7 @@
                         :bulbs      (bulbs/get-data        reply-url)
                         :url        reply-url
                         :post-time  @(get-reply-post-time  cols)
-                        :user       (utils/get-user-id user-url)}]]
+                        :user       (utils/get-user-id     user-url)}]]
     replies)))
 
 (defn get-users-data
@@ -122,11 +122,11 @@
       {
         :thread   (get-thread-data   rows thread-id)
         :replies  replies
-        :users    (distinct (conj (get-users-data rows) (flatten
-                    (filter (comp not empty?) 
+        :users    (distinct (conj (get-users-data rows) 
+                    (flatten
                       (for [reply replies
                         :let [users (:users (:bulbs reply))]]
-                      users)))))
+                      users))))
       }))
   ([subforum-id thread-id]
     (let [url    (get-thread-url     subforum-id thread-id)
