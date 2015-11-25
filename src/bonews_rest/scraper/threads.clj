@@ -118,24 +118,45 @@
       :when (contains? (:bulbs reply) :users)]
     users)))))
 
+(defn get-data-by-ids
+  [subforum-id thread-id]
+  (let [url    (get-thread-url     subforum-id thread-id)
+        table  (get-replies-table  url)
+        rows   (utils/get-rows     table)]
+    {
+      :thread   (get-thread-data   rows thread-id)
+      :replies  (get-replies-data  rows)
+      :users    (get-users-data    rows)
+    }))
+
+(defn get-data-by-url
+  [url]
+  (let [table       (get-replies-table  url)
+        rows        (utils/get-rows     table)
+        thread-id   (get-thread-id      url)
+        replies     (get-replies-data   rows)]
+    {
+      :thread   (get-thread-data   rows thread-id)
+      :replies  replies
+      :users    (collate-users     rows replies)
+    }))
+
+(defn rm-users-from-bulb
+  [reply]
+  (update-in reply [:bulbs] dissoc :users))
+
+(defn clean-replies
+  [replies]
+  (utils/remove-nils (map rm-users-from-bulb replies)))
+
+(defn clean-data
+  [data]
+  (let [replies          (:replies data)
+        cleaned-replies  (clean-replies replies)]
+  (assoc data :replies cleaned-replies)))
+
 (defn get-data
   ([url]
-    (let [table       (get-replies-table  url)
-          rows        (utils/get-rows     table)
-          thread-id   (get-thread-id      url)
-          replies     (get-replies-data   rows)]
-      
-      {
-        :thread   (get-thread-data   rows thread-id)
-        :replies  replies
-        :users    (collate-users     rows replies)
-      }))
+    (clean-data (get-data-by-url url)))
   ([subforum-id thread-id]
-    (let [url    (get-thread-url     subforum-id thread-id)
-          table  (get-replies-table  url)
-          rows   (utils/get-rows     table)]
-      {
-        :thread   (get-thread-data   rows thread-id)
-        :replies  (get-replies-data  rows)
-        :users    (get-users-data    rows)
-      })))
+    (get-data-by-ids subforum-id thread-id)))
