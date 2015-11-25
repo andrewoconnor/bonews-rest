@@ -25,14 +25,14 @@
   "remove pairs of key-value that has nil value from a (possibly nested) map. also transform map to nil if all of its value are nil" 
   [nm]
   (walk/postwalk 
-   (fn [el]
-     (if (map? el)
+    (fn [el]
+      (if (map? el)
       ; (let [m (into {} (remove (comp nil? second) el))]
-       (let [m (apply dissoc el (map first (filter (comp nil? second) el)))]
-         (when (seq m)
-           m))
-       el))
-   nm))
+        (let [m (apply dissoc el (map first (filter (comp nil? second) el)))]
+          (when (seq m)
+            m))
+        el))
+    nm))
 
 (defn get-username
   [cols]

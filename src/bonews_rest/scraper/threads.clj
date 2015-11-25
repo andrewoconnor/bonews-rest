@@ -71,13 +71,11 @@
   [rows thread-id]
   {
     :id thread-id
-    :replies 
-      (seq 
-        (for [row rows
-          :let [cols        (utils/get-cols  row)
-                reply-url   (get-reply-url   cols)
-                replies     (get-reply-id    reply-url)]]
-      replies))
+    :replies (for [row rows
+                :let [cols        (utils/get-cols  row)
+                      reply-url   (get-reply-url   cols)
+                      replies     (get-reply-id    reply-url)]]
+                replies)
   }
 )
 

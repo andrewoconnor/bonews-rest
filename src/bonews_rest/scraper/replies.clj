@@ -49,7 +49,7 @@
   (let [reply-div  (get-reply-div reply-url)
         upvotes    (get-upvotes-col reply-div)
         downvotes  (get-downvotes-col reply-div)]
-  (get-reply-message reply-div)))
+    (get-reply-message reply-div)))
   ; {
     ; :reply-num-upvotes      (get-num-votes upvotes)
     ; :reply-num-downvotes    (get-num-votes downvotes)
