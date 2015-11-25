@@ -36,15 +36,15 @@
       (utils/get-user-id)))
 
 (defn get-user-url
-  [list-item]
-  (str "http://bo-ne.ws/forum/"
-    (-> list-item
-        (:content)
-        first
-        (html/select link-href)
-        first
-        (:attrs)
-        (:href))))
+  [user-id]
+  (str "http://bo-ne.ws/forum/profile.php?0," user-id))
+    ; (-> list-item
+    ;     (:content)
+    ;     first
+    ;     (html/select link-href)
+    ;     first
+    ;     (:attrs)
+    ;     (:href))))
 
 (defn get-upvotes-list
   [reply-page]
@@ -68,11 +68,12 @@
 
 (defn user-helper
   [list-item]
+  (let [user-id  (get-user-id   list-item)]
   {
-    :id    (get-user-id   list-item)
-    :name  (get-username  list-item)
-    :url   (get-user-url  list-item)
-  })
+    :id    user-id
+    :name  (get-username list-item)
+    :url   (get-user-url user-id)
+  }))
 
 (defn get-user-data
   [upvotes-list downvotes-list]
@@ -93,17 +94,17 @@
 
 (defn get-votes-data
   [reply-page]
-  (let [upvotes-list    (get-upvotes-list   reply-page)
-        downvotes-list  (get-downvotes-list reply-page)]
-    (-> {
-          :upvotes {
-            :users (votes-helper upvotes-list)
-          }
-          :downvotes {
-            :users (votes-helper downvotes-list)
-          }
-          :users (get-user-data upvotes-list downvotes-list)
-        })))
+  (let [upvotes-list    (get-upvotes-list    reply-page)
+        downvotes-list  (get-downvotes-list  reply-page)]
+    {
+      :upvotes {
+        :users (votes-helper upvotes-list)
+      }
+      :downvotes {
+        :users (votes-helper downvotes-list)
+      }
+      :users (get-user-data upvotes-list downvotes-list)
+    }))
 
 (defn has-bulbs
   [reply-url]

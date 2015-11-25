@@ -100,17 +100,23 @@
 
 (defn get-users-data
   [rows]
-  (distinct 
-    (seq
-      (for [row rows
-        :let [cols       (utils/get-cols      row)
-              reply-url  (get-reply-url       cols)
-              user-url   (utils/get-user-url  cols)
-              users      {
-                          :id    (utils/get-user-id   user-url)
-                          :name  (utils/get-username  cols)
-                          :url   user-url}]]
-      users))))
+  (for [row rows
+    :let [cols       (utils/get-cols      row)
+          reply-url  (get-reply-url       cols)
+          user-url   (utils/get-user-url  cols)
+          users      {
+                      :id    (utils/get-user-id   user-url)
+                      :name  (utils/get-username  cols)
+                      :url   user-url}]]
+  users))
+
+(defn collate-users
+  [rows replies]
+  (distinct (flatten (conj (get-users-data rows)
+    (for [reply replies
+      :let [users (:users (:bulbs reply))]
+      :when (contains? (:bulbs reply) :users)]
+    users)))))
 
 (defn get-data
   ([url]
@@ -122,11 +128,7 @@
       {
         :thread   (get-thread-data   rows thread-id)
         :replies  replies
-        :users    (distinct (conj (get-users-data rows) 
-                    (flatten
-                      (for [reply replies
-                        :let [users (:users (:bulbs reply))]]
-                      users))))
+        :users    (collate-users     rows replies)
       }))
   ([subforum-id thread-id]
     (let [url    (get-thread-url     subforum-id thread-id)

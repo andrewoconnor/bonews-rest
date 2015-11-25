@@ -45,12 +45,15 @@
 
 (defn get-user-url
   [cols]
-  (-> cols
+  (str "http://bo-ne.ws/forum/profile.php?0,"
+    (-> cols
       second
       (html/select link-href)
       last
       (:attrs)
-      (:href)))
+      (:href)
+      (str/split #"\,")
+      second)))
 
 (defn get-user-id
   [user-url]
