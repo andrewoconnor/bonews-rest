@@ -83,40 +83,41 @@
 
 (defn get-replies-data
   [rows]
-  (seq 
-    (for [row rows
-      :let [cols       (utils/get-cols      row)
-            reply-url  (get-reply-url       cols)
-            user-url   (utils/get-user-url  cols)
-            replies    {
-                        :id         (get-reply-id          reply-url)
-                        :title      (get-reply-title       cols)
-                        ; :body       (br/get-reply-data    reply-url)
-                        :bulbs      (bulbs/get-data        reply-url)
-                        :url        reply-url
-                        :post-time  @(get-reply-post-time  cols)
-                        :user       (utils/get-user-id     user-url)}]]
-    replies)))
+  (for [row rows
+    :let [cols       (utils/get-cols      row)
+          reply-url  (get-reply-url       cols)
+          user-url   (utils/get-user-url  cols)]]
+    {
+      :id         (get-reply-id          reply-url)
+      :title      (get-reply-title       cols)
+      ; :body       (br/get-reply-data    reply-url)
+      :bulbs      (bulbs/get-data        reply-url)
+      :url        reply-url
+      :post-time  @(get-reply-post-time  cols)
+      :user       (utils/get-user-id     user-url)
+    }))
 
 (defn get-users-data
   [rows]
   (for [row rows
     :let [cols       (utils/get-cols      row)
           reply-url  (get-reply-url       cols)
-          user-url   (utils/get-user-url  cols)
-          users      {
-                      :id    (utils/get-user-id   user-url)
-                      :name  (utils/get-username  cols)
-                      :url   user-url}]]
-  users))
+          user-url   (utils/get-user-url  cols)]]
+    {
+      :id    (utils/get-user-id   user-url)
+      :name  (utils/get-username  cols)
+      :url   user-url
+    }))
 
 (defn collate-users
   [rows replies]
-  (distinct (flatten (conj (get-users-data rows)
-    (for [reply replies
-      :let [users (:users (:bulbs reply))]
-      :when (contains? (:bulbs reply) :users)]
-    users)))))
+  (-> (for [reply replies
+        :let [users (:users (:bulbs reply))]
+        :when (contains? (:bulbs reply) :users)]
+        users)
+      (conj (get-users-data rows))
+      flatten
+      distinct))
 
 (defn get-data-by-ids
   [subforum-id thread-id]
@@ -151,8 +152,8 @@
 
 (defn clean-data
   [data]
-  (let [replies          (:replies data)
-        cleaned-replies  (clean-replies replies)]
+  (let [replies          (:replies       data)
+        cleaned-replies  (clean-replies  replies)]
   (assoc data :replies cleaned-replies)))
 
 (defn get-data

@@ -47,13 +47,13 @@
   [cols]
   (str "http://bo-ne.ws/forum/profile.php?0,"
     (-> cols
-      second
-      (html/select link-href)
-      last
-      (:attrs)
-      (:href)
-      (str/split #"\,")
-      second)))
+        second
+        (html/select link-href)
+        last
+        (:attrs)
+        (:href)
+        (str/split #"\,")
+        second)))
 
 (defn get-user-id
   [user-url]
@@ -77,8 +77,7 @@
   [table type-of-data]
   (seq
     (for [row (get-rows table)
-      :let [data (-> row
-                    (get-cols)
-                    (type-of-data))]
+      :let [cols (get-cols row)
+            data (type-of-data cols)]
       :when (seq data)]
     data)))
