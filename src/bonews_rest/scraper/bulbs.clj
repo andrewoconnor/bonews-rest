@@ -5,15 +5,15 @@
 
 (def link-href [[:a (html/attr? :href)]])
 
-(defn bulbs-clickable?
+(defn can-scrape-bulbs?
   []
-  (web/click (web/find-element {:css "input.bo_knows_bulbs_view_votes"}))
+  (web/click "input.bo_knows_bulbs_view_votes")
   (web/visible? "div.bo_knows_bulbs_voters"))
 
 (defn get-page-source
   [reply-url]
   (web/to reply-url)
-  (web/wait-until #(bulbs-clickable?))
+  (web/wait-until #(can-scrape-bulbs?))
   (utils/parse-page-source (web/page-source)))
 
 (defn get-username
