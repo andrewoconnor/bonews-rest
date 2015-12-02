@@ -5,16 +5,24 @@
 
 (def link-href [[:a (html/attr? :href)]])
 
+; (defn get-page-source
+;   [reply-url]
+;   (web/set-driver! {:browser :firefox} reply-url)
+;   (web/to reply-url)
+;   (web/click "input.bo_knows_bulbs_view_votes")
+;   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters") 9000 1000)
+;   (let [reply-page (utils/parse-page-source (web/page-source))]
+;     (web/close)
+;     reply-page
+;   ))
+
 (defn get-page-source
   [reply-url]
-  (web/set-driver! {:browser :firefox} reply-url)
   (web/to reply-url)
+  (Thread/sleep 3000)
   (web/click "input.bo_knows_bulbs_view_votes")
   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters") 9000 1000)
-  (let [reply-page (utils/parse-page-source (web/page-source))]
-    (web/close)
-    reply-page
-  ))
+  (utils/parse-page-source (web/page-source)))
 
 (defn get-username
   [list-item]

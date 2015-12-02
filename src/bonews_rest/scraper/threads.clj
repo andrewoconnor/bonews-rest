@@ -70,8 +70,8 @@
 (defn consolidate-users
   [user bulbs]
   (if (some? (:users bulbs))
-    (into `(~user) (:users bulbs))
-    `(~user)))
+    (into (list user) (:users bulbs))
+    (list user)))
 
 (defn get-data-helper
   [rows]
@@ -106,21 +106,23 @@
 
 (defn get-data-by-url
   [url]
+  (web/set-driver! {:browser :firefox})
   (let [table      (get-replies-table  url)
         rows       (utils/get-rows     table)
         thread-id  (get-thread-id      url)
         tdata      (get-data-helper    rows)
         replies    (map first          tdata)
-        users      (collate-users      tdata)]
-        ; users      (map last           tdata)]
-    {
-      :thread {
-        :id       thread-id
-        :replies  (map :id replies)
-      }
-      :replies replies
-      :users   users
-    }))
+        users      (collate-users      tdata)
+        data       {
+                      :thread {
+                        :id       thread-id
+                        :replies  (map :id replies)
+                      }
+                      :replies replies
+                      :users   users
+                    }]
+    (web/close)
+    data))
 
 ; (defn get-data-by-ids
 ;   [subforum-id thread-id]
