@@ -5,23 +5,15 @@
 
 (def link-href [[:a (html/attr? :href)]])
 
-; (defn get-page-source
-;   [reply-url]
-;   (web/set-driver! {:browser :firefox} reply-url)
-;   (web/to reply-url)
-;   (web/click "input.bo_knows_bulbs_view_votes")
-;   (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters") 9000 1000)
-;   (let [reply-page (utils/parse-page-source (web/page-source))]
-;     (web/close)
-;     reply-page
-;   ))
+(defn get-bulbs-clickable?
+  []
+  (web/click (web/find-element {:css "input.bo_knows_bulbs_view_votes"}))
+  (web/visible? "div.bo_knows_bulbs_voters"))
 
 (defn get-page-source
   [reply-url]
   (web/to reply-url)
-  (Thread/sleep 3000)
-  (web/click "input.bo_knows_bulbs_view_votes")
-  (web/wait-until #(web/visible? "div.bo_knows_bulbs_voters") 9000 1000)
+  (web/wait-until #(get-bulbs-clickable?))
   (utils/parse-page-source (web/page-source)))
 
 (defn get-username
@@ -50,11 +42,15 @@
 (defn get-upvotes-list
   [reply-page]
   (-> reply-page
+      (html/select [:div.bo_knows_bulbs_voters html/first-child])
+      first
       (html/select [:ul.bo_knows_bulbs_up])))
 
 (defn get-downvotes-list
   [reply-page]
   (-> reply-page
+      (html/select [:div.bo_knows_bulbs_voters html/first-child])
+      first
       (html/select [:ul.bo_knows_bulbs_down])))
 
 (defn get-vote-data
