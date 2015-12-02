@@ -54,11 +54,11 @@
 
 (defn get-reply-post-time
   [cols]
-  (-> cols
-      last
-      (:content)
-      first
-      (t/local-date-time custom-formatter)))
+  @(->  cols
+        last
+        (:content)
+        first
+        (t/local-date-time custom-formatter)))
 
 (defn get-thread-id
   [reply-url]
@@ -67,82 +67,71 @@
       second
       (Integer/parseInt)))
 
-(defn get-reply-ids
+(defn consolidate-users
+  [user bulbs]
+  (if (some? (:users bulbs))
+    (into `(~user) (:users bulbs))
+    `(~user)))
+
+(defn get-data-helper
   [rows]
   (for [row rows
-    :let [cols        (utils/get-cols  row)
-          reply-url   (get-reply-url   cols)
-          replies     (get-reply-id    reply-url)]]
-    replies))
-
-(defn get-thread-data
-  [rows thread-id]
-  {
-    :id       thread-id
-    :replies  (get-reply-ids rows)
-  }
-)
-
-(defn get-replies-data
-  [rows]
-  (for [row rows
-    :let [cols       (utils/get-cols      row)
-          reply-url  (get-reply-url       cols)
-          user-url   (utils/get-user-url  cols)]]
-    {
-      :id         (get-reply-id          reply-url)
-      :title      (get-reply-title       cols)
-      ; :body       (br/get-reply-data    reply-url)
-      :bulbs      (bulbs/get-data        reply-url)
-      :url        reply-url
-      :post-time  @(get-reply-post-time  cols)
-      :user       (utils/get-user-id     user-url)
-    }))
-
-(defn get-users-data
-  [rows]
-  (for [row rows
-    :let [cols       (utils/get-cols      row)
-          reply-url  (get-reply-url       cols)
-          user-url   (utils/get-user-url  cols)]]
-    {
-      :id    (utils/get-user-id   user-url)
-      :name  (utils/get-username  cols)
-      :url   user-url
-    }))
+    :let [cols         (utils/get-cols        row)
+          reply-url    (get-reply-url         cols)
+          reply-id     (get-reply-id          reply-url)
+          reply-title  (get-reply-title       cols)
+          post-time    (get-reply-post-time   cols)
+          bulbs        (bulbs/get-data        reply-url)
+          user-url     (utils/get-user-url    cols)
+          user-id      (utils/get-user-id     user-url)
+          username     (utils/get-username    cols)
+          reply        {
+            :id         reply-id
+            :title      reply-title
+            :url        reply-url
+            :post-time  post-time
+            :user       user-id
+          }
+          user         {
+            :id         user-id
+            :name       username
+            :url        user-url
+          }
+          users        (consolidate-users user bulbs)]]
+    [reply users]))
 
 (defn collate-users
-  [rows replies]
-  (-> (for [reply replies
-        :let [users (:users (:bulbs reply))]
-        :when (contains? (:bulbs reply) :users)]
-        users)
-      (conj (get-users-data rows))
-      flatten
-      distinct))
-
-(defn get-data-by-ids
-  [subforum-id thread-id]
-  (let [url    (get-thread-url     subforum-id thread-id)
-        table  (get-replies-table  url)
-        rows   (utils/get-rows     table)]
-    {
-      :thread   (get-thread-data   rows thread-id)
-      :replies  (get-replies-data  rows)
-      :users    (get-users-data    rows)
-    }))
+  [tdata]
+  (distinct (reduce into '() (map second tdata))))
 
 (defn get-data-by-url
   [url]
-  (let [table       (get-replies-table  url)
-        rows        (utils/get-rows     table)
-        thread-id   (get-thread-id      url)
-        replies     (get-replies-data   rows)]
+  (let [table      (get-replies-table  url)
+        rows       (utils/get-rows     table)
+        thread-id  (get-thread-id      url)
+        tdata      (get-data-helper    rows)
+        replies    (map first          tdata)
+        users      (collate-users      tdata)]
+        ; users      (map last           tdata)]
     {
-      :thread   (get-thread-data   rows thread-id)
-      :replies  replies
-      :users    (collate-users     rows replies)
+      :thread {
+        :id       thread-id
+        :replies  (map :id replies)
+      }
+      :replies replies
+      :users   users
     }))
+
+; (defn get-data-by-ids
+;   [subforum-id thread-id]
+;   (let [url    (get-thread-url     subforum-id thread-id)
+;         table  (get-replies-table  url)
+;         rows   (utils/get-rows     table)]
+;     {
+;       :thread   (get-thread-data   rows thread-id)
+;       :replies  (get-replies-data  rows)
+;       :users    (get-users-data    rows)
+;     }))
 
 (defn rm-users-from-bulb
   [reply]
@@ -160,6 +149,8 @@
 
 (defn get-data
   ([url]
-    (clean-data (get-data-by-url url)))
+    ; (clean-data (get-data-by-url url)))
+    (get-data-by-url url))
   ([subforum-id thread-id]
-    (get-data-by-ids subforum-id thread-id)))
+    nil))
+    ; (get-data-by-ids subforum-id thread-id)))
