@@ -73,6 +73,12 @@
     (into (list user) (:users bulbs))
     (list user)))
 
+(defn rm-nil-bulb
+  [reply]
+  (if (nil? (reply :bulbs))
+    (dissoc reply :bulbs)
+    reply))
+
 (defn get-data-helper
   [rows]
   (for [row rows
@@ -91,6 +97,7 @@
             :url        reply-url
             :post-time  post-time
             :user       user-id
+            :bulbs      (dissoc bulbs :users)
           }
           user         {
             :id         user-id
@@ -98,7 +105,7 @@
             :url        user-url
           }
           users        (consolidate-users user bulbs)]]
-    [reply users]))
+    [(rm-nil-bulb reply) users]))
 
 (defn collate-users
   [tdata]
@@ -135,23 +142,8 @@
 ;       :users    (get-users-data    rows)
 ;     }))
 
-(defn rm-users-from-bulb
-  [reply]
-  (update-in reply [:bulbs] dissoc :users))
-
-(defn clean-replies
-  [replies]
-  (utils/remove-nils (map rm-users-from-bulb replies)))
-
-(defn clean-data
-  [data]
-  (let [replies          (:replies       data)
-        cleaned-replies  (clean-replies  replies)]
-  (assoc data :replies cleaned-replies)))
-
 (defn get-data
   ([url]
-    ; (clean-data (get-data-by-url url)))
     (get-data-by-url url))
   ([subforum-id thread-id]
     nil))
