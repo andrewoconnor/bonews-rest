@@ -6,7 +6,8 @@
             [guangyin.core :as t]
             [guangyin.format :as f]
             [clojure.string :as str]
-            [clj-webdriver.taxi :as web]))
+            [clj-webdriver.taxi :as web]
+            [clj-webdriver.firefox :as ff]))
 
 (def url-prefix "http://bo-ne.ws/forum/read.php?")
 
@@ -113,7 +114,10 @@
 
 (defn get-data-by-url
   [url]
-  (web/set-driver! {:browser :firefox})
+  (web/set-driver! {:browser :firefox
+                    :profile (doto (ff/new-profile)
+                                   (ff/set-preferences {"browser.migration.version" 9001 
+                                                        "permissions.default.image" 2}))})
   (let [table      (get-replies-table  url)
         rows       (utils/get-rows     table)
         thread-id  (get-thread-id      url)
