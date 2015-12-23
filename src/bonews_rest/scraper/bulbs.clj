@@ -103,15 +103,16 @@
       :users (get-user-data upvotes-list downvotes-list)
     }))
 
-(defn has-bulbs
+(defn has-bulbs?
   [reply-url]
   (-> reply-url
       (utils/fetch-url)
-      (html/select [:input.bo_knows_bulbs_view_votes])))
+      (html/select [:input.bo_knows_bulbs_view_votes])
+      (empty?)))
 
 (defn get-data
   [reply-url]
-  (if (empty? (has-bulbs reply-url))
+  (if (has-bulbs? reply-url)
     nil
     (-> reply-url
         get-page-source

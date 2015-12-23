@@ -104,8 +104,33 @@
                        result)])
                 [z result])))))))
 
+; (defn longest-common-substrings
+;   "Returns vector of longest common substrings for the two input strings."
+;   [^String s1 ^String s2]
+;     (vec
+;       (find-lcs s1 s2 (make-array Long/TYPE (count s1) (count s2)))))
+
 (defn longest-common-substrings
-  "Returns vector of longest common substrings for the two input strings."
-  [^String s1 ^String s2]
-    (vec  
-      (find-lcs s1 s2 (make-array Long/TYPE (count s1) (count s2)))))
+  [str-pair]
+  (let [s1 (first   str-pair)
+        s2 (second  str-pair)]
+    (vec
+      (find-lcs s1 s2 (make-array Long/TYPE (count s1) (count s2))))))
+
+
+(defn combinations [n coll]
+  (if (= 1 n)
+    (map list coll)
+    (lazy-seq
+     (when-let [[head & tail] (seq coll)]
+       (concat (for [x (combinations (dec n) tail)]
+                 (cons head x))
+               (combinations n tail))))))
+
+(defn most-frequent-n [n items]
+  (->> items
+    frequencies
+    (sort-by val)
+    reverse
+    (take n)
+    (map first)))

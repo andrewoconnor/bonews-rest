@@ -12,9 +12,14 @@
 (def url-prefix "http://bo-ne.ws/forum/read.php?")
 
 (def link-href [[:a (html/attr? :href)]])
+
 (def link-label [:h4 [:a (html/attr? :href)]])
 
-(def custom-formatter (f/date-time-formatter "MMMM dd, yyyy hh:mma"))
+(def bo-time-formatter (f/date-time-formatter "MMMM dd, yyyy hh:mma"))
+
+(def bo-ffprofile (doto (ff/new-profile)
+                        (ff/set-preferences {"browser.migration.version" 9001 
+                                             "permissions.default.image" 2})))
 
 (defn get-thread-url
   "Construct URL for a single thread of a subforum"
@@ -59,7 +64,7 @@
         last
         (:content)
         first
-        (t/local-date-time custom-formatter)))
+        (t/local-date-time bo-time-formatter)))
 
 (defn get-thread-id
   [reply-url]
@@ -114,10 +119,8 @@
 
 (defn get-data-by-url
   [url]
-  (web/set-driver! {:browser :firefox
-                    :profile (doto (ff/new-profile)
-                                   (ff/set-preferences {"browser.migration.version" 9001 
-                                                        "permissions.default.image" 2}))})
+  (web/set-driver! {:browser           :firefox
+                    :profile           bo-ffprofile})
   (let [table      (get-replies-table  url)
         rows       (utils/get-rows     table)
         thread-id  (get-thread-id      url)

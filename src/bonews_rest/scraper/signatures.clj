@@ -7,6 +7,24 @@
 (def search-url-prefix "http://bo-ne.ws/forum/search.php?0,author=")
 (def search-url-suffix ",match_type=USER_ID,match_dates=0,match_threads=0")
 
+
+
+(defn get-reply-div
+  [reply-url]
+  (-> reply-url
+      (utils/fetch-url)
+      (html/select [:div.message-body])))
+
+(defn get-reply-message
+  [reply-url]
+  (-> reply-url
+      (get-reply-div)
+      first
+      (html/at [:form] nil)
+      first
+      (html/at [:div.message-options] nil)
+      last))
+
 (defn get-posts-page-by-user
   [user-id]
   (-> (str search-url-prefix user-id search-url-suffix)
@@ -26,6 +44,32 @@
              subforum    (:content (last (html/select reply [html/last-child])))]
       :when (and (not-news-post? reply-msg) (not= subforum "Bugs"))]
       reply-url)))
+
+(defn get-replies
+  [user-id]
+  (for [reply (get-replies-list user-id)
+    :let [message (get-reply-message reply)]]
+    (apply str (html/emit* message))))
+
+(defn get-signature
+  [user-id]
+  (->>  user-id
+        (get-replies)
+        (take 5)
+        (utils/combinations 2)
+        (map utils/longest-common-substrings)
+        (utils/most-frequent-n 1)
+        ffirst))
+
+  ; (utils/most-frequent-n 1
+  ;   (for [combo (utils/combinations 2 (get-replies user-id))
+  ;     :let [first_str   (first  combo)
+  ;           second_str  (second combo)]]
+  ;     (utils/longest-common-substrings first_str second_str))))
+  ; (utils/most-frequent-n 1 (map #(utils/longest-common-substrings %) (utils/combinations 2 (get-replies user-id)))))
+  
+
+
 
 ; (def search-forums-url "http://bo-ne.ws/forum/search.php")
 
