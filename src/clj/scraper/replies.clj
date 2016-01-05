@@ -1,5 +1,5 @@
-(ns bonews-rest.scraper.replies
-  (:require [bonews-rest.scraper.utils :as utils]
+(ns clj.scraper.replies
+  (:require [clj.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
             [guangyin.format :as f]

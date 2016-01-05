@@ -1,4 +1,4 @@
-(ns bonews-rest.scraper.utils
+(ns clj.scraper.utils
   (:require [net.cgrand.enlive-html :as html]
             [clojure.string :as str]
             [clojure.walk :as walk]))

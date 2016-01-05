@@ -1,5 +1,5 @@
-(ns bonews-rest.scraper.bulbs
-  (:require [bonews-rest.scraper.utils :as utils]
+(ns clj.scraper.bulbs
+  (:require [clj.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
             [clj-webdriver.taxi :as web]))
 

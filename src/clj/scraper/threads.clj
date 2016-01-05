@@ -1,7 +1,7 @@
-(ns bonews-rest.scraper.threads
-  (:require [bonews-rest.scraper.utils :as utils]
-            [bonews-rest.scraper.replies :as br]
-            [bonews-rest.scraper.bulbs :as bulbs]
+(ns clj.scraper.threads
+  (:require [clj.scraper.utils :as utils]
+            [clj.scraper.replies :as br]
+            [clj.scraper.bulbs :as bulbs]
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
             [guangyin.format :as f]

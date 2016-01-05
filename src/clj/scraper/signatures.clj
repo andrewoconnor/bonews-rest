@@ -1,5 +1,5 @@
-(ns bonews-rest.scraper.signatures
-  (:require [bonews-rest.scraper.utils :as utils]
+(ns clj.scraper.signatures
+  (:require [clj.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
             [clj-webdriver.taxi :as web]
             [clojure.string :as str]))
@@ -32,16 +32,41 @@
 
 (defn not-news-post?
   [reply-msg]
-  (not (every? identity (map = reply-msg " \n\nQuote"))))
+  (let [ret (re-find #"Quote" (first reply-msg))]
+    (if (nil? ret)
+      true
+      false)))
+
+  ;(not (every? identity (map = reply-msg " \n\nQuote"))))
+
+(defn get-reply
+  [replies-results-page]
+  (take 10 (html/select replies-results-page [:div.search-result])))
+
+(defn get-reply-link
+  [reply]
+  (html/select reply utils/link-label))
+
+(defn get-reply-url
+  [reply-link]
+  (get-in (first reply-link) [:attrs :href]))
+
+(defn get-reply-msg
+  [reply]
+  (:content (last (html/select reply [:blockquote]))))
+
+(defn get-subforum
+  [reply]
+  (:content (last (html/select reply [html/last-child]))))
 
 (defn get-replies-list
   [user-id]
   (let [replies-results-page (get-posts-page-by-user user-id)]
-    (for [reply (html/select replies-results-page [:div.search-result])
-      :let  [reply-link  (html/select reply utils/link-label)
-             reply-url   (get-in (first reply-link) [:attrs :href])
-             reply-msg   (:content (last (html/select reply [:blockquote])))
-             subforum    (:content (last (html/select reply [html/last-child])))]
+    (for [reply (get-reply replies-results-page)
+      :let  [reply-link  (get-reply-link  reply)
+             reply-url   (get-reply-url   reply-link) 
+             reply-msg   (get-reply-msg   reply)
+             subforum    (get-subforum    reply)]
       :when (and (not-news-post? reply-msg) (not= subforum "Bugs"))]
       reply-url)))
 
@@ -51,15 +76,50 @@
     :let [message (get-reply-message reply)]]
     (apply str (html/emit* message))))
 
+
+(defn strip-msg-body-tags
+  [signature]
+  (let [ret (re-find #"(?s)<div class=\"message-body\">(.*)</div>" signature)]
+    (if (nil? ret)
+      signature
+      (last ret))))
+
+(defn strip-unmatched-html-tags
+  [signature]
+  (apply str (html/emit* (html/html-snippet signature))))
+
+(defn strip-no-text
+  [signature]
+  (let [ret (re-find #"(?s)(No text.)(<br />\s?)+(.*)" signature)]
+    (if (nil? ret)
+      signature
+      (last ret))))
+
+(defn strip-leading-period
+  [signature]
+  (let [ret (re-find #"(?s)^.(.*)$" signature)]
+    (if (nil? ret)
+      signature
+      (last ret))))
+
+(defn clean-signature
+  [signature]
+  (-> signature
+      (strip-msg-body-tags)
+      (strip-no-text)
+      (strip-leading-period)
+      (strip-unmatched-html-tags)
+      (str/trim)))
+
 (defn get-signature
   [user-id]
   (->>  user-id
         (get-replies)
-        (take 5)
         (utils/combinations 2)
         (map utils/longest-common-substrings)
         (utils/most-frequent-n 1)
-        ffirst))
+        ffirst
+        (clean-signature)))
 
   ; (utils/most-frequent-n 1
   ;   (for [combo (utils/combinations 2 (get-replies user-id))
