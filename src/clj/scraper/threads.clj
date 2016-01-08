@@ -48,8 +48,7 @@
       first
       (html/select link-href)
       first
-      (:attrs)
-      (:href)))
+      (get-in [:attrs :href])))
 
 (defn get-reply-id
   [reply-url]
@@ -73,7 +72,55 @@
       second
       (Integer/parseInt)))
 
-(defn consolidate-users
+(defn get-indent-level
+  [cols]
+  (-> cols
+      first
+      (html/select [:h4])
+      first
+      (get-in [:attrs :style])
+      (->> (re-find #"padding-left: (\d+)px;"))
+      last
+      (Integer/parseInt)
+      (/ 10)))
+
+(defn get-parent-id
+  [indent-level reply-levels]
+  (if (= indent-level 0)
+    nil
+    (get reply-levels (dec indent-level))))
+
+(defn get-parent-ids
+  [indents reply-levels]
+  (when (first indents)
+    (let [indent        (first   indents)
+          indent-level  (first   indent)
+          reply-id      (second  indent)
+          new-levels    (assoc   reply-levels indent-level reply-id)]
+      (cons (get-parent-id indent-level reply-levels)
+            (get-parent-ids (rest indents) new-levels)))))
+
+(defn set-parent-id
+  [reply parent-id]
+  (-> reply
+      (assoc :parent-id parent-id)
+      (dissoc :indent)))
+
+(defn rm-nil-parent-id
+  [replies]
+  (let [first-reply     (first replies)
+        thread-replies  (rest  replies)]
+    (cons (dissoc first-reply :parent-id) thread-replies)))
+
+(defn set-parent-ids
+  [replies parents]
+  (when (first replies)
+    (let [reply     (first replies)
+          parent-id (first parents)]
+      (cons (set-parent-id reply parent-id)
+            (set-parent-ids (rest replies) (rest parents))))))
+
+(defn combine-users
   [user bulbs]
   (if (some? (:users bulbs))
     (into (list user) (:users bulbs))
@@ -99,6 +146,7 @@
           username     (utils/get-username    cols)
           reply        {
             :id         reply-id
+            :indent     [(get-indent-level cols) reply-id]
             :title      reply-title
             :url        reply-url
             :post-time  post-time
@@ -110,7 +158,7 @@
             :name       username
             :url        user-url
           }
-          users        (consolidate-users user bulbs)]]
+          users        (combine-users user bulbs)]]
     [(rm-nil-bulb reply) users]))
 
 (defn collate-users
@@ -126,13 +174,15 @@
         thread-id  (get-thread-id      url)
         tdata      (get-data-helper    rows)
         replies    (map first          tdata)
+        indents    (map #(get % :indent) replies)
+        parents    (get-parent-ids indents [])
         users      (collate-users      tdata)
         data       {
                       :thread {
                         :id       thread-id
                         :replies  (map :id replies)
                       }
-                      :replies replies
+                      :replies (rm-nil-parent-id (set-parent-ids replies parents))
                       :users   users
                     }]
     (web/close)
