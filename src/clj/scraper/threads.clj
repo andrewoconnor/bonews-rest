@@ -90,114 +90,89 @@
     nil
     (get reply-levels (dec indent-level))))
 
-(defn get-parent-ids
-  [indents reply-levels]
-  (when (first indents)
-    (let [indent        (first   indents)
-          indent-level  (first   indent)
-          reply-id      (second  indent)
-          new-levels    (assoc   reply-levels indent-level reply-id)]
-      (cons (get-parent-id indent-level reply-levels)
-            (get-parent-ids (rest indents) new-levels)))))
-
-(defn set-parent-id
-  [reply parent-id]
-  (-> reply
-      (assoc :parent-id parent-id)
-      (dissoc :indent)))
-
-(defn rm-nil-parent-id
-  [replies]
-  (let [first-reply     (first replies)
-        thread-replies  (rest  replies)]
-    (cons (dissoc first-reply :parent-id) thread-replies)))
-
-(defn set-parent-ids
-  [replies parents]
-  (when (first replies)
-    (let [reply     (first replies)
-          parent-id (first parents)]
-      (cons (set-parent-id reply parent-id)
-            (set-parent-ids (rest replies) (rest parents))))))
-
 (defn combine-users
-  [user bulbs]
-  (if (some? (:users bulbs))
-    (into (list user) (:users bulbs))
-    (list user)))
+  [thread-data user bulb-users]
+  (let [users (:users thread-data)]
+    (-> users
+        (into (list user))
+        (into bulb-users)
+        (distinct))))
+
+(defn update-thread-data
+  [thread-data replies users]
+  (-> thread-data
+      (assoc :replies replies)
+      (assoc :users   users)))
 
 (defn rm-nil-bulb
   [reply]
-  (if (nil? (reply :bulbs))
+  (if (nil? (:bulbs reply))
     (dissoc reply :bulbs)
     reply))
 
-(defn get-data-helper
-  [rows]
-  (for [row rows
-    :let [cols         (utils/get-cols        row)
-          reply-url    (get-reply-url         cols)
-          reply-id     (get-reply-id          reply-url)
-          reply-title  (get-reply-title       cols)
-          post-time    (get-reply-post-time   cols)
-          bulbs        (bulbs/get-data        reply-url)
-          user-url     (utils/get-user-url    cols)
-          user-id      (utils/get-user-id     user-url)
-          username     (utils/get-username    cols)
-          reply        {
-            :id         reply-id
-            :indent     [(get-indent-level cols) reply-id]
-            :title      reply-title
-            :url        reply-url
-            :post-time  post-time
-            :user       user-id
-            :bulbs      (dissoc bulbs :users)
-          }
-          user         {
-            :id         user-id
-            :name       username
-            :url        user-url
-          }
-          users        (combine-users user bulbs)]]
-    [(rm-nil-bulb reply) users]))
+(defn rm-nil-parent-id
+  [reply]
+  (if (nil? (:parent-id reply))
+    (dissoc reply :parent-id)
+    reply))
 
-(defn collate-users
-  [tdata]
-  (distinct (reduce into '() (map second tdata))))
+(defn rm-nil-keys
+  [reply]
+  (-> reply
+      (rm-nil-bulb)
+      (rm-nil-parent-id)))
+
+(defn get-data-helper
+  [rows reply-parents thread-data]
+  (when (first rows)
+    (let [row            (first                 rows)
+          cols           (utils/get-cols        row)
+          reply-url      (get-reply-url         cols)
+          reply-id       (get-reply-id          reply-url)
+          reply-title    (get-reply-title       cols)
+          post-time      (get-reply-post-time   cols)
+          bulbs          (bulbs/get-data        reply-url)
+          user-url       (utils/get-user-url    cols)
+          user-id        (utils/get-user-id     user-url)
+          username       (utils/get-username    cols)
+          indent-level   (get-indent-level      cols)
+          reply-parents  (assoc reply-parents indent-level reply-id)
+          parent-id      (get-parent-id indent-level reply-parents)
+          user           {:id         user-id
+                          :name       username
+                          :url        user-url}
+          bulb-users     (:users bulbs)
+          bulbs          (dissoc bulbs :users)
+          reply          {:id         reply-id
+                          :parent-id  parent-id
+                          :title      reply-title
+                          :url        reply-url
+                          :post-time  post-time
+                          :user-id    user-id
+                          :bulbs      bulbs}
+          replies        (into (:replies thread-data) (list (rm-nil-keys reply)))
+          users          (combine-users thread-data user bulb-users)
+          thread-data    (update-thread-data thread-data replies users)]
+      (merge thread-data (get-data-helper (rest rows) reply-parents thread-data)))))
 
 (defn get-data-by-url
   [url]
   (web/set-driver! {:browser           :firefox
                     :profile           bo-ffprofile})
-  (let [table      (get-replies-table  url)
-        rows       (utils/get-rows     table)
-        thread-id  (get-thread-id      url)
-        tdata      (get-data-helper    rows)
-        replies    (map first          tdata)
-        indents    (map #(get % :indent) replies)
-        parents    (get-parent-ids indents [])
-        users      (collate-users      tdata)
-        data       {
-                      :thread {
+  (let [table        (get-replies-table  url)
+        rows         (utils/get-rows     table)
+        thread-id    (get-thread-id      url)
+        thread-data  (get-data-helper rows [] {:replies '() :users '()})
+        replies      (reverse (:replies thread-data))
+        users        (:users   thread-data)
+        data         {:thread {
                         :id       thread-id
                         :replies  (map :id replies)
                       }
-                      :replies (rm-nil-parent-id (set-parent-ids replies parents))
-                      :users   users
-                    }]
+                      :replies replies
+                      :users   users}]
     (web/close)
     data))
-
-; (defn get-data-by-ids
-;   [subforum-id thread-id]
-;   (let [url    (get-thread-url     subforum-id thread-id)
-;         table  (get-replies-table  url)
-;         rows   (utils/get-rows     table)]
-;     {
-;       :thread   (get-thread-data   rows thread-id)
-;       :replies  (get-replies-data  rows)
-;       :users    (get-users-data    rows)
-;     }))
 
 (defn get-data
   ([url]
