@@ -1,4 +1,5 @@
 (ns clj.scraper.threads
+  (:use [clj-webdriver.driver :only [init-driver]])
   (:require [clj.scraper.utils :as utils]
             [clj.scraper.replies :as br]
             [clj.scraper.bulbs :as bulbs]
@@ -7,7 +8,9 @@
             [guangyin.format :as f]
             [clojure.string :as str]
             [clj-webdriver.taxi :as web]
-            [clj-webdriver.firefox :as ff]))
+            [clj-webdriver.firefox :as ff])
+  (:import [org.openqa.selenium.phantomjs PhantomJSDriver]
+           [org.openqa.selenium.remote DesiredCapabilities]))
 
 (def url-prefix "http://bo-ne.ws/forum/read.php?")
 
@@ -121,7 +124,7 @@
   (->> reply
        (rm-nil-keys)
        (list)
-       (into (:replies thread-data))))
+       (concat (:replies thread-data))))
 
 (defn update-thread-data
   [thread-data replies users]
@@ -164,18 +167,25 @@
 
 (defn get-data-by-url
   [url]
-  (web/set-driver!  {:browser            :firefox
-                     :profile            bo-ffprofile})
-  (let [table        (get-replies-table  url)
+  ; {:browser :firefox :profile bo-ffprofile}
+  (web/set-driver!
+    (init-driver
+      {:webdriver
+        (PhantomJSDriver.
+          (doto (DesiredCapabilities.)
+            (.setCapability "phantomjs.page.settings.loadImages" false)))}))
+  (let [starttime    (System/nanoTime)
+        table        (get-replies-table  url)
         rows         (utils/get-rows     table)
         thread-id    (get-thread-id      url)
         thread-data  (get-data-helper rows [] {:replies '() :users '()})
-        replies      (reverse (:replies thread-data))
+        replies      (:replies thread-data)
         users        (:users   thread-data)
         data         {:thread {:id       thread-id
                                :replies  (map :id replies)}
                       :replies replies
                       :users   users}]
+    (printf "Scrape completed in %ss.%n" (/ (- (System/nanoTime) starttime) 1e9))
     (web/close)
     data))
 
@@ -184,4 +194,3 @@
     (get-data-by-url url))
   ([subforum-id thread-id]
     nil))
-    ; (get-data-by-ids subforum-id thread-id)))

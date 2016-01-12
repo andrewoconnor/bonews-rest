@@ -7,12 +7,14 @@
                  [enlive "1.1.6"]
                  [guangyin "0.3.0"]
                  [org.seleniumhq.selenium/selenium-java "2.48.2"]
+                 [com.github.detro/phantomjsdriver "1.2.0"]
                  [clj-webdriver "0.7.2"]
                  [yesql "0.5.1"]
                  [joplin.core "0.3.5"]
                  [joplin.jdbc "0.3.5"]
                  [org.postgresql/postgresql "9.4-1201-jdbc4"]]
   :main ^:skip-aot clj.core
+  :jvm-opts ["-Dphantomjs.binary.path=/usr/local/Cellar/phantomjs/2.0.1/bin/phantomjs"]
   :target-path "target/%s"
   :source-paths ["src" "joplin"]
   :resource-paths ["joplin"]
