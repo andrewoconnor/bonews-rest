@@ -8,7 +8,8 @@
             [guangyin.format :as f]
             [clojure.string :as str]
             [clj-webdriver.taxi :as web]
-            [clj-webdriver.firefox :as ff])
+            ;[clj-webdriver.firefox :as ff]
+            )
   (:import [org.openqa.selenium.phantomjs PhantomJSDriver]
            [org.openqa.selenium.remote DesiredCapabilities]))
 
@@ -20,9 +21,11 @@
 
 (def bo-time-formatter (f/date-time-formatter "MMMM dd, yyyy hh:mma"))
 
-(def bo-ffprofile (doto (ff/new-profile)
-                        (ff/set-preferences {"browser.migration.version" 9001 
-                                             "permissions.default.image" 2})))
+;(def bo-ffprofile (doto (ff/new-profile)
+;                        (ff/set-preferences {"browser.migration.version" 9001
+;                                             "permissions.default.image" 2})))
+
+(def phantomjs-path (System/getenv "PHANTOMJS_PATH"))
 
 (defn get-thread-url
   "Construct URL for a single thread of a subforum"
@@ -173,6 +176,7 @@
       {:webdriver
         (PhantomJSDriver.
           (doto (DesiredCapabilities.)
+            (.setCapability "phantomjs.binary.path" phantomjs-path)
             (.setCapability "phantomjs.page.settings.loadImages" false)))}))
   (let [starttime    (System/nanoTime)
         table        (get-replies-table  url)

@@ -14,7 +14,6 @@
                  [joplin.jdbc "0.3.5"]
                  [org.postgresql/postgresql "9.4-1201-jdbc4"]]
   :main ^:skip-aot clj.core
-  :jvm-opts ["-Dphantomjs.binary.path=/usr/local/Cellar/phantomjs/2.0.1/bin/phantomjs"]
   :target-path "target/%s"
   :source-paths ["src" "joplin"]
   :resource-paths ["joplin"]
