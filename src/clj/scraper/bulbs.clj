@@ -31,8 +31,7 @@
       first
       (html/select link-href)
       first
-      (:attrs)
-      (:href)
+      (get-in [:attrs :href])
       (utils/get-user-id)))
 
 (defn get-user-url
@@ -42,20 +41,18 @@
 (defn get-upvotes-list
   [reply-page]
   (-> reply-page
-      (html/select [:div.bo_knows_bulbs_voters html/first-child])
-      first
-      (html/select [:ul.bo_knows_bulbs_up])))
+      (html/select [:div.bo_knows_bulbs_voters html/first-child :ul.bo_knows_bulbs_up])
+      first))
 
 (defn get-downvotes-list
   [reply-page]
   (-> reply-page
-      (html/select [:div.bo_knows_bulbs_voters html/first-child])
-      first
-      (html/select [:ul.bo_knows_bulbs_down])))
+      (html/select [:div.bo_knows_bulbs_voters html/first-child :ul.bo_knows_bulbs_down])
+      first))
 
-(defn get-vote-data
-  [list-item]
-  (get-user-id list-item))
+;(defn get-vote-data
+;  [list-item]
+;  (get-user-id list-item))
 
 (defn get-list-items
   [ulist]
@@ -65,29 +62,31 @@
 
 (defn user-helper
   [list-item]
-  (let [user-id  (get-user-id   list-item)]
-  {
-    :id    user-id
-    :name  (get-username list-item)
-    :url   (get-user-url user-id)
-  }))
+  (let [user-id (get-user-id list-item)]
+    {
+      :id    user-id
+      :name  (get-username list-item)
+      :url   (get-user-url user-id)
+    }))
 
 (defn get-user-data
   [upvotes-list downvotes-list]
-  (distinct (concat 
-    (for [list-item (get-list-items upvotes-list)
-      :let [data (user-helper list-item)]]
-    data)
-    (for [list-item (get-list-items downvotes-list)
-      :let [data (user-helper list-item)]]
-    data))))
+  ;(distinct (concat
+  (set (into
+    (for [list-item (get-list-items upvotes-list)]
+      (user-helper list-item))
+    (for [list-item (get-list-items downvotes-list)]
+      (user-helper list-item))
+  )))
 
 (defn votes-helper
   [ulist]
-  (seq
-    (for [list-item (get-list-items ulist)
-      :let [data (get-vote-data list-item)]]
-    data)))
+  ;(seq
+  (for [list-item (get-list-items ulist)
+    :let [data (get-user-id list-item)]]
+  data)
+    ;)
+  )
 
 (defn get-votes-data
   [reply-page]

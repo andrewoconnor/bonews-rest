@@ -8,6 +8,7 @@
             [guangyin.format :as f]
             [clojure.string :as str]
             [clj-webdriver.taxi :as web]
+            [clojure.set :refer [union]]
             ;[clj-webdriver.firefox :as ff]
             )
   (:import [org.openqa.selenium.phantomjs PhantomJSDriver]
@@ -118,16 +119,15 @@
   [thread-data user bulb-users]
   (let [users (:users thread-data)]
     (-> users
-        (into (list user))
-        (into bulb-users)
-        (distinct))))
+        (union (into #{} (list user)))
+        (union bulb-users))))
 
 (defn combine-replies
   [thread-data reply]
   (->> reply
        (rm-nil-keys)
        (list)
-       (concat (:replies thread-data))))
+       (into (:replies thread-data))))
 
 (defn update-thread-data
   [thread-data replies users]
@@ -182,7 +182,7 @@
         table        (get-replies-table  url)
         rows         (utils/get-rows     table)
         thread-id    (get-thread-id      url)
-        thread-data  (get-data-helper rows [] {:replies '() :users '()})
+        thread-data  (get-data-helper rows [] {:replies [] :users #{}})
         replies      (:replies thread-data)
         users        (:users   thread-data)
         data         {:thread {:id       thread-id
