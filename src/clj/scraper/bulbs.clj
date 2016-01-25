@@ -109,7 +109,7 @@
       (html/select [:input.bo_knows_bulbs_view_votes])
       (empty?)))
 
-(defn get-data
+(defn get-data-helper
   [reply-url]
   (if (has-bulbs? reply-url)
     nil
@@ -117,3 +117,7 @@
         get-page-source
         get-votes-data
         utils/remove-nils)))
+
+(defn get-data
+  [reply-url]
+  (utils/try-times 3 (get-data-helper reply-url)))
