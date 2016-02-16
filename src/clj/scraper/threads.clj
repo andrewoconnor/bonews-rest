@@ -147,11 +147,18 @@
 (defn get-thread-data
   [row]
   (let [cols      (utils/get-cols row)
-        reply-url (get-reply-url cols)]
-    {:id      (get-reply-id reply-url)
-     :title   (get-reply-title cols)
-     :indent  (get-indent-level cols)
-     :bulbs   (bulbs/get-data reply-url)}))
+        reply-url (get-reply-url cols)
+        id        (get-reply-id reply-url)
+        indent    (get-indent-level cols)
+        bulbs     (bulbs/get-data reply-url)
+        reply     {:id      id
+                   :title   (get-reply-title cols)
+                   :bulbs   (dissoc bulbs :users) }
+        users     (get bulbs :users)
+        parents   {indent id}]
+    {:replies (vec (list reply))
+     :users   (set users)
+     :parents parents}))
         ;
         ;reply-id     (get-reply-id reply-url)
         ;reply-title  (get-reply-title cols)
@@ -193,14 +200,6 @@
 ;      (merge thread-data (get-data-helper (rest rows) reply-parents thread-data)))))
 
 
-(defn get-and-rm-users
-  [reply]
-  (let [users  (get-in reply [:bulbs :users])
-        reply1 (update-in reply [:bulbs] dissoc :users)]
-    {:replies (vec (list reply1))
-     :users   (set users)
-     :parents [(:indent reply1)]}))
-
 (defn get-data-by-url
   [url]
   ; {:browser :firefox :profile bo-ffprofile}
@@ -209,8 +208,7 @@
         rows         (utils/get-rows table)
         thread-id    (get-thread-id url)
         data         (map get-thread-data rows)
-        data1        (map get-and-rm-users data)
-        comb-data    (apply merge-with into data1)
+        comb-data    (reduce #(merge-with into %1 %2) data)
 
         ;users        (reduce union (map #(get-in % [:bulbs :users]) data))
         ;replies      (map #(update-in % [:bulbs] dissoc :users) data)
