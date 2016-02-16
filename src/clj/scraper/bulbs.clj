@@ -50,17 +50,13 @@
       (html/select [:div.bo_knows_bulbs_voters html/first-child :ul.bo_knows_bulbs_down])
       first))
 
-;(defn get-vote-data
-;  [list-item]
-;  (get-user-id list-item))
-
 (defn get-list-items
   [ulist]
   (-> ulist
       (html/select [:li])
       rest))
 
-(defn user-helper
+(defn user-data-helper
   [list-item]
   (let [user-id (get-user-id list-item)]
     {
@@ -71,33 +67,24 @@
 
 (defn get-user-data
   [upvotes-list downvotes-list]
-  ;(distinct (concat
   (set (into
-    (for [list-item (get-list-items upvotes-list)]
-      (user-helper list-item))
-    (for [list-item (get-list-items downvotes-list)]
-      (user-helper list-item))
-  )))
+         (map user-data-helper (get-list-items upvotes-list))
+         (map user-data-helper (get-list-items downvotes-list)))))
 
-(defn votes-helper
+(defn get-user-ids
   [ulist]
-  ;(seq
-  (for [list-item (get-list-items ulist)
-    :let [data (get-user-id list-item)]]
-  data)
-    ;)
-  )
+  (seq (map get-user-id (get-list-items ulist))))
 
 (defn get-votes-data
   [reply-page]
-  (let [upvotes-list    (get-upvotes-list    reply-page)
-        downvotes-list  (get-downvotes-list  reply-page)]
+  (let [upvotes-list    (get-upvotes-list reply-page)
+        downvotes-list  (get-downvotes-list reply-page)]
     {
       :upvotes {
-        :users (votes-helper upvotes-list)
+        :users (get-user-ids upvotes-list)
       }
       :downvotes {
-        :users (votes-helper downvotes-list)
+        :users (get-user-ids downvotes-list)
       }
       :users (get-user-data upvotes-list downvotes-list)
     }))
