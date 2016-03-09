@@ -72,6 +72,16 @@
         first
         (t/local-date-time bo-time-formatter)))
 
+(defn get-reply-user
+  [cols]
+  (let [user-url (utils/get-user-url   cols)
+        user-id  (utils/get-user-id    user-url)
+        username (utils/get-username   cols)]
+    (list
+      {:id   user-id
+       :name username
+       :url  user-url})))
+
 (defn get-thread-id
   [reply-url]
   (-> reply-url
@@ -91,58 +101,19 @@
       (Integer/parseInt)
       (/ 10)))
 
-(defn get-parent-id
-  [indent-level reply-levels]
-  (if (= indent-level 0)
-    nil
-    (get reply-levels (dec indent-level))))
-
-(defn rm-nil-bulb
-  [reply]
-  (if (nil? (:bulbs reply))
-    (dissoc reply :bulbs)
-    reply))
-
-(defn rm-nil-parent-id
-  [reply]
-  (if (nil? (:parent-id reply))
-    (dissoc reply :parent-id)
-    reply))
-
-(defn rm-nil-keys
-  [reply]
-  (-> reply
-      (rm-nil-bulb)
-      (rm-nil-parent-id)))
-
-;(defn combine-users
-;  [thread-data user bulb-users]
-;  (let [users (:users thread-data)]
-;    (-> users
-;        (union (into #{} (list user)))
-;        (union bulb-users))))
-;
-;(defn combine-replies
-;  [thread-data reply]
-;  (->> reply
-;       (rm-nil-keys)
-;       (list)
-;       (into (:replies thread-data))))
-;
-;(defn update-thread-data
-;  [thread-data replies users]
-;  (-> thread-data
-;      (assoc :replies replies)
-;      (assoc :users   users)))
-
-;(defn get-data-helper
-;  [row]
-;  (let [cols           (utils/get-cols       row)
-;        reply-url      (get-reply-url        cols)
-;        reply-id       (get-reply-id         reply-url)
-;        reply-title    (get-reply-title      cols)
-;        post-time      (get-reply-post-time  cols)
-;        reply          {:id         reply-id}]))
+(defn get-reply-data
+  [cols id bulbs]
+  (let [user  (get-reply-user cols)
+        reply {:id    id
+               :title (get-reply-title cols)
+               :time  (get-reply-post-time cols)
+               :user  (:id (first user))}
+        bulbs (dissoc bulbs :users)]
+    (if (empty? bulbs)
+      {:reply reply
+       :user  user}
+      {:reply (assoc reply :bulbs bulbs)
+       :user  user})))
 
 (defn get-thread-data
   [row]
@@ -151,83 +122,37 @@
         id        (get-reply-id reply-url)
         indent    (get-indent-level cols)
         bulbs     (bulbs/get-data reply-url)
-        reply     {:id      id
-                   :title   (get-reply-title cols)
-                   :bulbs   (dissoc bulbs :users) }
-        users     (get bulbs :users)
+        rdata     (get-reply-data cols id bulbs)
+        reply     (:reply rdata)
+        user      (:user rdata)
+        users     (into (get bulbs :users) user)
         parents   {indent id}]
     {:replies (vec (list reply))
      :users   (set users)
      :parents parents}))
-        ;
-        ;reply-id     (get-reply-id reply-url)
-        ;reply-title  (get-reply-title cols)
-        ;bulbs        (bulbs/get-data reply-url)
-        ;]
 
+(defn get-parent
+  [curr parents]
+  (let [indent   (ffirst (:parents curr))
+        parent   (get parents (dec indent))
+        replies  (assoc (first (:replies curr)) :parent parent)]
+    (assoc curr :replies (vec (list replies)))))
 
-;(defn get-data-helper
-;  [rows reply-parents thread-data]
-;  (when (first rows)
-;    (let [row            (first                rows)
-;          cols           (utils/get-cols       row)
-;          reply-url      (get-reply-url        cols)
-;          reply-id       (get-reply-id         reply-url)
-;          reply-title    (get-reply-title      cols)
-;          post-time      (get-reply-post-time  cols)
-;          bulbs          (bulbs/get-data       reply-url)
-;          user-url       (utils/get-user-url   cols)
-;          user-id        (utils/get-user-id    user-url)
-;          username       (utils/get-username   cols)
-;          indent-level   (get-indent-level     cols)
-;          reply-parents  (assoc reply-parents indent-level reply-id)
-;          parent-id      (get-parent-id indent-level reply-parents)
-;          user           {:id         user-id
-;                          :name       username
-;                          :url        user-url}
-;          bulb-users     (:users bulbs)
-;          bulbs          (dissoc bulbs :users)
-;          reply          {:id         reply-id
-;                          :parent-id  parent-id
-;                          :title      reply-title
-;                          :url        reply-url
-;                          :post-time  post-time
-;                          :user-id    user-id
-;                          :bulbs      bulbs}
-;          replies        (combine-replies thread-data reply)
-;          users          (combine-users thread-data user bulb-users)
-;          thread-data    (update-thread-data thread-data replies users)]
-;      (merge thread-data (get-data-helper (rest rows) reply-parents thread-data)))))
-
+(defn my-reducer
+  [new-map curr]
+  (let [parents (:parents new-map)
+        ncurr   (get-parent curr parents)]
+    (merge-with into new-map ncurr)))
 
 (defn get-data-by-url
   [url]
   ; {:browser :firefox :profile bo-ffprofile}
 
-  (let [table        (get-replies-table url)
-        rows         (utils/get-rows table)
-        thread-id    (get-thread-id url)
-        data         (map get-thread-data rows)
-        comb-data    (reduce #(merge-with into %1 %2) data)
-
-        ;users        (reduce union (map #(get-in % [:bulbs :users]) data))
-        ;replies      (map #(update-in % [:bulbs] dissoc :users) data)
-        ;thread       {:id thread-id
-        ;              :replies replies
-        ;              :users users}
-        ;LAST
-        ;thread-data  (get-data-helper rows [] {:replies [] :users #{}})
-        ;replies      (:replies thread-data)
-        ;users        (:users   thread-data)
-        ;data         {:thread {:id       thread-id
-        ;                       :replies  (map :id replies)}
-        ;              :replies replies
-        ;              :users   users}
-        ]
-
-    ;(web/close)
-
-    ;(assoc thread :users users)
+  (let [table     (get-replies-table url)
+        rows      (utils/get-rows table)
+        thread-id (get-thread-id url)
+        data      (map get-thread-data rows)
+        comb-data (reduce my-reducer {} data)]
     comb-data
     ; data
     ))
@@ -240,7 +165,8 @@
        (PhantomJSDriver.
          (doto (DesiredCapabilities.)
            (.setCapability "phantomjs.binary.path" phantomjs-path)
-           (.setCapability "phantomjs.page.settings.loadImages" false)))})))
+           (.setCapability "phantomjs.page.settings.loadImages" false)
+           (.setCapability "takesScreenshot" false)))})))
 
 (defn get-data
   ([url]
