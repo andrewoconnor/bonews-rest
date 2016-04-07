@@ -107,7 +107,7 @@
   (-> signature
       (strip-msg-body-tags)
       (strip-no-text)
-      (strip-leading-period)
+      ;(strip-leading-period)
       (strip-unmatched-html-tags)
       (str/trim)))
 
@@ -119,7 +119,12 @@
         (map utils/longest-common-substrings)
         (utils/most-frequent-n 1)
         ffirst
-        (clean-signature)))
+        (clean-signature)
+        ;(strip-unmatched-html-tags)
+        ;(str/trim)
+        ;(custom-trim)
+        ;(clean-signature)
+        ))
 
   ; (utils/most-frequent-n 1
   ;   (for [combo (utils/combinations 2 (get-replies user-id))

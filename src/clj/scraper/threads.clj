@@ -1,7 +1,7 @@
 (ns clj.scraper.threads
   (:use [clj-webdriver.driver :only [init-driver]])
   (:require [clj.scraper.utils :as utils]
-            [clj.scraper.replies :as br]
+            [clj.scraper.replies :as replies]
             [clj.scraper.bulbs :as bulbs]
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
@@ -102,12 +102,13 @@
       (/ 10)))
 
 (defn get-reply-data
-  [cols id bulbs]
+  [reply-url cols id bulbs]
   (let [user  (get-reply-user cols)
-        reply {:id    id
-               :title (get-reply-title cols)
-               :time  (get-reply-post-time cols)
-               :user  (:id (first user))}
+        reply {:id      id
+               :title   (get-reply-title cols)
+               :message (replies/get-reply-data reply-url (first user))
+               :time    (get-reply-post-time cols)
+               :user    (:id (first user))}
         bulbs (dissoc bulbs :users)]
     (if (empty? bulbs)
       {:reply reply
@@ -122,7 +123,7 @@
         id        (get-reply-id reply-url)
         indent    (get-indent-level cols)
         bulbs     (bulbs/get-data reply-url)
-        rdata     (get-reply-data cols id bulbs)
+        rdata     (get-reply-data reply-url cols id bulbs)
         reply     (:reply rdata)
         user      (:user rdata)
         users     (into (get bulbs :users) user)

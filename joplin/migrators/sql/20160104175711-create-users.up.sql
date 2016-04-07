@@ -10,12 +10,14 @@ CREATE DOMAIN dom_signature TEXT CHECK (
 --;;
 
 CREATE TABLE users (
-  id          SERIAL PRIMARY KEY,
-  bo_id       INT UNIQUE NOT NULL,
-  username    dom_username UNIQUE NOT NULL,
-  signature   dom_signature,
-  created_at  TIMESTAMP DEFAULT current_timestamp,
-  updated_at  TIMESTAMP
+  id               INT UNIQUE NOT NULL,
+  username         dom_username UNIQUE NOT NULL,
+  signature        dom_signature,
+--   upvotes_count    INT,
+--   downvotes_count  INT,
+  replies_count    INT NOT NULL DEFAULT 0,
+  created_at       TIMESTAMP DEFAULT current_timestamp,
+  updated_at       TIMESTAMP
 );
 --;;
 
@@ -25,8 +27,8 @@ FOR EACH ROW
 EXECUTE PROCEDURE set_updated_at_column();
 --;;
 
-CREATE UNIQUE INDEX bo_id_idx ON users (bo_id);
+CREATE UNIQUE INDEX idx_users_id ON users (id);
 --;;
 
-CREATE UNIQUE INDEX username_idx ON users (username);
+CREATE UNIQUE INDEX idx_username ON users (username);
 --;;

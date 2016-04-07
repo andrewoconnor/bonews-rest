@@ -1,7 +1,7 @@
 {:migrators    {:sql-mig        "joplin/migrators/sql"
                 :sql-mig-extra  "joplin/migrators/sql/extrapath"}
  :seeds        {:sql-seed       "seeds.sql/run"}
- :databases    {:psql-dev       {:type :sql, :url #envf ["jdbc:postgresql://%s/bo_dev?user=%s&password=%s" DEV_PGURL DEV_PGUSER DEV_PGPASSWD]}
-                :psql-prod      {:type :sql, :url #envf ["jdbc:postgresql://%s/bo_prod?user=%s&password=%s" PROD_PGURL PROD_PGUSER PROD_PGPASSWD]}}
+ :databases    {:psql-dev       {:type :sql, :url #envf ["jdbc:postgresql://%s/%s?user=%s&password=%s" DEV_PGHOST DEV_DBNAME DEV_PGUSER DEV_PGPASSWD]}
+                :psql-prod      {:type :sql, :url #envf ["jdbc:postgresql://%s/%s?user=%s&password=%s" PROD_PGHOST PROD_DBNAME PROD_PGUSER PROD_PGPASSWD]}}
  :environments {:dev            [{:db :psql-dev, :migrator :sql-mig, :seed :sql-seed}]
                 :prod           [{:db :sql-prod, :migrator :imported-sql-mig, :seed :imported-sql-seed}]}}

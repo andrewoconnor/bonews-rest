@@ -19,6 +19,7 @@
   :resource-paths ["joplin"]
   :profiles {:uberjar {:aot :all}}
   :injections [(require 'clj.alias)
+               (require 'clj.queries)
                (require 'clj.scraper.utils)
                (require 'clj.scraper.forums)
                (require 'clj.scraper.subforums)

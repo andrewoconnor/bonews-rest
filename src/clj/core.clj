@@ -6,6 +6,8 @@
              :refer [migrate rollback seed reset create pending]]
             [ragtime.strategy :as strategy]))
 
+(def config (load-config "joplin.edn"))
+
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]

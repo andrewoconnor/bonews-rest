@@ -1,7 +1,7 @@
-DROP INDEX username_idx;
+DROP INDEX idx_username;
 --;;
 
-DROP INDEX bo_id_idx;
+DROP INDEX idx_users_id;
 --;;
 
 DROP TRIGGER trg_user_updated_at ON users CASCADE;
