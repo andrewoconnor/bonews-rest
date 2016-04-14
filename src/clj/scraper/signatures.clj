@@ -37,7 +37,7 @@
   [reply-link]
   (get-in (first reply-link) [:attrs :href]))
 
-(defn get-reply
+(defn get-replies
   [replies-results-page]
   (html/select replies-results-page [:div.search-result]))
 
@@ -49,7 +49,7 @@
 (defn get-no-text-reply
   [user-id page-num]
   (let [replies-results-page (get-posts-page-by-user user-id page-num)
-        replies              (get-reply replies-results-page)
+        replies              (get-replies replies-results-page)
         no-text-reply        (drop-while not-nt-reply? replies)]
     (if (first no-text-reply)
       (get-reply-url (get-reply-link (first no-text-reply)))
