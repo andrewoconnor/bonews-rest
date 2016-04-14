@@ -37,8 +37,8 @@
   [thread-url]
   (-> thread-url
       (utils/fetch-url)
-      (html/select [:div#phorum :table])
-      last))
+      (html/select [:div#phorum :> :table.list])
+      first))
 
 (defn get-reply-title
   [cols]
@@ -74,9 +74,9 @@
 
 (defn get-reply-user
   [cols]
-  (let [user-url (utils/get-user-url   cols)
-        user-id  (utils/get-user-id    user-url)
-        username (utils/get-username   cols)]
+  (let [user-url (utils/get-user-url cols)
+        user-id  (utils/get-user-id user-url)
+        username (utils/get-username cols)]
     (list
       {:id   user-id
        :name username
@@ -103,13 +103,14 @@
 
 (defn get-reply-data
   [reply-url cols id bulbs]
-  (let [user  (get-reply-user cols)
-        reply {:id      id
-               :title   (get-reply-title cols)
-               :message (replies/get-reply-data reply-url (first user))
-               :time    (get-reply-post-time cols)
-               :user    (:id (first user))}
-        bulbs (dissoc bulbs :users)]
+  (let [user    (get-reply-user cols)
+        user-id (get (first user) :id)
+        reply   {:id      id
+                 :title   (get-reply-title cols)
+                 :message (replies/get-reply-data reply-url user-id)
+                 :time    (get-reply-post-time cols)
+                 :user    (:id (first user))}
+        bulbs   (dissoc bulbs :users)]
     (if (empty? bulbs)
       {:reply reply
        :user  user}
@@ -126,23 +127,28 @@
         rdata     (get-reply-data reply-url cols id bulbs)
         reply     (:reply rdata)
         user      (:user rdata)
-        users     (into (get bulbs :users) user)
+        users     (into (:users bulbs) user)
         parents   {indent id}]
     {:replies (vec (list reply))
      :users   (set users)
      :parents parents}))
 
 (defn get-parent
-  [curr parents]
-  (let [indent   (ffirst (:parents curr))
-        parent   (get parents (dec indent))
-        replies  (assoc (first (:replies curr)) :parent parent)]
-    (assoc curr :replies (vec (list replies)))))
+  [parents indent]
+  (get parents (dec indent)))
+
+(defn add-parent
+  [curr parent]
+  (let [replies (assoc (first (:replies curr)) :parent parent)
+        ncurr   (assoc curr :replies (vec (list replies)))]
+    ncurr))
 
 (defn my-reducer
   [new-map curr]
   (let [parents (:parents new-map)
-        ncurr   (get-parent curr parents)]
+        indent  (ffirst (:parents curr))
+        parent  (get-parent parents indent)
+        ncurr   (add-parent curr parent)]
     (merge-with into new-map ncurr)))
 
 (defn get-data-by-url

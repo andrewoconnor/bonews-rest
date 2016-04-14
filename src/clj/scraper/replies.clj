@@ -6,8 +6,6 @@
             [guangyin.format :as f]
             [clojure.string :as str]))
 
-(def link-href [[:a (html/attr? :href)]])
-
 (defn get-reply-div
   [reply-url]
   (-> reply-url
@@ -23,16 +21,6 @@
       (html/at [:div.message-options] nil)
       last))
 
-(defn get-num-votes
-  [vote-col]
-  (-> vote-col
-      first
-      (:content)
-      first
-      (str/replace "\t" "")
-      (str/replace "\n" "")
-      Integer/parseInt))
-
 (defn strip-msg-body-tags
   [signature]
   (let [ret (re-find #"(?s)<div class=\"message-body\">(.*)</div>" signature)]
@@ -40,25 +28,33 @@
       signature
       (last ret))))
 
-(defn get-downvotes-col
+(defn strip-no-text
+  [signature]
+  (let [ret (re-find #"(?s)(No text.)(<br />\s?)+(.*)" signature)]
+    (if (nil? ret)
+      signature
+      (last ret))))
+
+(defn get-message
   [reply-div]
   (-> reply-div
-      first
-      (html/select [:td#bo_knows_bulbs_vote_down])))
+      (get-reply-message)
+      (html/emit*)
+      (->> (apply str))
+      (strip-msg-body-tags)
+      (strip-no-text)
+      (str/trim)))
 
-(defn get-upvotes-col
-  [reply-div]
-  (-> reply-div
-      first
-      (html/select [:td#bo_knows_bulbs_vote_up])))
-
-(defn custom-trim
-  [my-str]
-  (str/replace my-str #"(\s\s)+" ""))
+(defn strip-breaks
+  [msg]
+  (let [ret (re-find #"^(?:<br />\n?\s?)*(.*)(?:<br />\n?\s?)*$" msg)]
+    (if (nil? ret)
+      msg
+      (last ret))))
 
 (defn get-reply-data
   [reply-url user-id]
   (let [reply-div  (get-reply-div reply-url)
-        msg        (str/trim (strip-msg-body-tags (apply str (html/emit* (get-reply-message reply-div)))))
+        msg        (get-message reply-div)
         signature  (sig/get-signature user-id)]
-    (str/replace msg signature "")))
+    (strip-breaks (str/replace msg signature ""))))

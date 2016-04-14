@@ -12,6 +12,12 @@ CREATE TABLE replies (
 );
 --;;
 
+CREATE TRIGGER trg_reply_updated_at
+BEFORE UPDATE ON replies
+FOR EACH ROW
+EXECUTE PROCEDURE set_updated_at_column();
+--;;
+
 CREATE TRIGGER trg_thread_replies_counter
 AFTER INSERT OR UPDATE OR DELETE ON replies
 FOR EACH ROW

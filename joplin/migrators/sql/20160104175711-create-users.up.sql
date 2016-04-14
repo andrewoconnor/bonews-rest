@@ -13,8 +13,8 @@ CREATE TABLE users (
   id               INT UNIQUE NOT NULL,
   username         dom_username UNIQUE NOT NULL,
   signature        dom_signature,
---   upvotes_count    INT,
---   downvotes_count  INT,
+  upvotes_count    SMALLINT NOT NULL DEFAULT 0,
+  downvotes_count  SMALLINT NOT NULL DEFAULT 0,
   replies_count    INT NOT NULL DEFAULT 0,
   created_at       TIMESTAMP DEFAULT current_timestamp,
   updated_at       TIMESTAMP

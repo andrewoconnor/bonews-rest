@@ -33,8 +33,7 @@
       first
       (html/select link-label)
       first
-      (:attrs)
-      (:href)))
+      (get-in [:attrs :href])))
 
 (defn get-subforum-id
   [subforum-url]

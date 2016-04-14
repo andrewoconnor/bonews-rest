@@ -14,6 +14,12 @@ CREATE TABLE bulbs (
 );
 --;;
 
+CREATE TRIGGER trg_bulb_updated_at
+BEFORE UPDATE ON bulbs
+FOR EACH ROW
+EXECUTE PROCEDURE set_updated_at_column();
+--;;
+
 CREATE OR REPLACE FUNCTION votes_counter_cache() RETURNS TRIGGER AS
 $$
 DECLARE
@@ -59,4 +65,10 @@ CREATE TRIGGER trg_replies_votes_counter
 AFTER INSERT OR UPDATE OR DELETE ON bulbs
 FOR EACH ROW
 EXECUTE PROCEDURE votes_counter_cache('replies', 'reply_id');
+--;;
+
+-- CREATE TRIGGER trg_users_votes_counter
+-- AFTER INSERT OR UPDATE OR DELETE ON bulbs
+-- FOR EACH ROW
+-- EXECUTE PROCEDURE votes_counter_cache('users', 'user_id');
 --;;

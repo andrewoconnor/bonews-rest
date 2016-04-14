@@ -7,6 +7,12 @@ CREATE TABLE threads (
 );
 --;;
 
+CREATE TRIGGER trg_thread_updated_at
+BEFORE UPDATE ON threads
+FOR EACH ROW
+EXECUTE PROCEDURE set_updated_at_column();
+--;;
+
 CREATE TRIGGER trg_subforum_threads_counter
 AFTER INSERT OR UPDATE OR DELETE ON threads
 FOR EACH ROW
