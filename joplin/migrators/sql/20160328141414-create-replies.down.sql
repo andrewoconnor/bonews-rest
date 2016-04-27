@@ -1,3 +1,9 @@
+DROP INDEX idx_reply_user_id;
+--;;
+
+DROP INDEX idx_reply_thread_id;
+--;;
+
 DROP INDEX idx_replies_id;
 --;;
 

@@ -1,5 +1,6 @@
 (ns seeds.sql
-    (:require [clojure.java.jdbc :as j]))
+    (:require [clojure.java.jdbc :as j]
+              [clj.utils.lorem_ipsum :as lorem]))
 
 (defn run [target & args]
   (j/with-db-connection [db {:connection-uri (-> target :db :url)}]
@@ -35,7 +36,17 @@
 
                         (j/insert! db :threads {:id 1234 :subforum_id 12})
 
-                        (j/insert! db :replies {:id 1234 :thread_id 1234 :user_id 42 :parent_id nil :title "test123"})
+                        (let [thread-id 1234]
+                          (loop [id 1234]
+                            (when (< id 1254)
+                              (j/insert! db :replies {:id id
+                                                      :thread_id thread-id
+                                                      :user_id 42
+                                                      :parent_id (if (= id 1234) nil (dec id))
+                                                      :title (first (lorem/random-sentence))
+                                                      :message (first (lorem/random-paragraph))})
+                              (recur (inc id)))))
+
 
                         (j/insert! db :bulbs {:reply_id 1234 :user_id 1 :vote 1})
                         (j/insert! db :bulbs {:reply_id 1234 :user_id 41 :vote -1})

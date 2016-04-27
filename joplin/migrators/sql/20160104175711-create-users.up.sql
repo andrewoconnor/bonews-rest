@@ -13,6 +13,7 @@ CREATE TABLE users (
   id               INT UNIQUE NOT NULL,
   username         dom_username UNIQUE NOT NULL,
   signature        dom_signature,
+  nt_reply_url     TEXT,
   upvotes_count    SMALLINT NOT NULL DEFAULT 0,
   downvotes_count  SMALLINT NOT NULL DEFAULT 0,
   replies_count    INT NOT NULL DEFAULT 0,

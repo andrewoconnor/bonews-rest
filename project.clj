@@ -26,7 +26,9 @@
                (require 'clj.scraper.threads)
                (require 'clj.scraper.replies)
                (require 'clj.scraper.bulbs)
-               (require 'clj.scraper.signatures)]
+               (require 'clj.scraper.users)
+               (require 'clj.scraper.signatures)
+               (require 'clj.utils.lorem-ipsum)]
   :aliases {"migrate" ["run" "-m" "clj.alias/migrate"]
             "seed" ["run" "-m" "clj.alias/seed"]
             "rollback" ["run" "-m" "clj.alias/rollback"]

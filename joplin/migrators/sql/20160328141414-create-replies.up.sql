@@ -32,3 +32,9 @@ EXECUTE PROCEDURE counter_cache('users', 'replies_count', 'user_id');
 
 CREATE UNIQUE INDEX idx_replies_id ON replies (id);
 --;;
+
+CREATE INDEX idx_reply_thread_id ON replies (thread_id);
+--;;
+
+CREATE INDEX idx_reply_user_id ON replies (user_id);
+--;;

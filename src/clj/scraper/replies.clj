@@ -56,5 +56,5 @@
   [reply-url user-id]
   (let [reply-div  (get-reply-div reply-url)
         msg        (get-message reply-div)
-        signature  (sig/get-signature user-id)]
+        signature  (sig/get-signature-by-id user-id)]
     (strip-breaks (str/replace msg signature ""))))

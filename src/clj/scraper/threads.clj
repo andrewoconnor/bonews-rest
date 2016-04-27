@@ -22,10 +22,6 @@
 
 (def bo-time-formatter (f/date-time-formatter "MMMM dd, yyyy hh:mma"))
 
-;(def bo-ffprofile (doto (ff/new-profile)
-;                        (ff/set-preferences {"browser.migration.version" 9001
-;                                             "permissions.default.image" 2})))
-
 (def phantomjs-path (System/getenv "PHANTOMJS_PATH"))
 
 (defn get-thread-url
@@ -117,7 +113,7 @@
       {:reply (assoc reply :bulbs bulbs)
        :user  user})))
 
-(defn get-thread-data
+(defn get-reply
   [row]
   (let [cols      (utils/get-cols row)
         reply-url (get-reply-url cols)
@@ -143,7 +139,7 @@
         ncurr   (assoc curr :replies (vec (list replies)))]
     ncurr))
 
-(defn my-reducer
+(defn get-thread-data
   [new-map curr]
   (let [parents (:parents new-map)
         indent  (ffirst (:parents curr))
@@ -153,16 +149,12 @@
 
 (defn get-data-by-url
   [url]
-  ; {:browser :firefox :profile bo-ffprofile}
-
   (let [table     (get-replies-table url)
         rows      (utils/get-rows table)
         thread-id (get-thread-id url)
-        data      (map get-thread-data rows)
-        comb-data (reduce my-reducer {} data)]
-    comb-data
-    ; data
-    ))
+        replies   (map get-reply rows)
+        thread    (reduce get-thread-data {} replies)]
+    thread))
 
 (defn set-web-driver
   []

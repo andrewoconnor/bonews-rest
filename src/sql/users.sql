@@ -1,7 +1,7 @@
 -- name: create-user!
 -- Inserts a new user into the users table
-INSERT INTO users (id, username, signature)
-VALUES (:id, :username, :signature);
+INSERT INTO users (id, username, signature, nt_reply_url)
+VALUES (:id, :username, :signature, :nt_reply_url);
 
 -- name: get-signature
 -- Gets signature of a particular user
