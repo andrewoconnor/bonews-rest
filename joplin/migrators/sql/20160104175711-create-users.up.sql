@@ -1,5 +1,5 @@
 CREATE DOMAIN dom_username TEXT CHECK (
-    LENGTH(VALUE) > 1    AND
+    LENGTH(VALUE) > 0    AND
     LENGTH(VALUE) < 200
 );
 --;;
@@ -10,15 +10,17 @@ CREATE DOMAIN dom_signature TEXT CHECK (
 --;;
 
 CREATE TABLE users (
-  id               INT UNIQUE NOT NULL,
-  username         dom_username UNIQUE NOT NULL,
-  signature        dom_signature,
-  nt_reply_url     TEXT,
-  upvotes_count    SMALLINT NOT NULL DEFAULT 0,
-  downvotes_count  SMALLINT NOT NULL DEFAULT 0,
-  replies_count    INT NOT NULL DEFAULT 0,
-  created_at       TIMESTAMP DEFAULT current_timestamp,
-  updated_at       TIMESTAMP
+  id                        INT UNIQUE NOT NULL,
+  username                  dom_username UNIQUE NOT NULL,
+  signature                 dom_signature,
+  nt_reply_url              TEXT,
+  upvotes_given_count       INT NOT NULL DEFAULT 0,
+  downvotes_given_count     INT NOT NULL DEFAULT 0,
+  upvotes_received_count    INT NOT NULL DEFAULT 0,
+  downvotes_received_count  INT NOT NULL DEFAULT 0,
+  replies_count             INT NOT NULL DEFAULT 0,
+  created_at                TIMESTAMP DEFAULT current_timestamp,
+  updated_at                TIMESTAMP
 );
 --;;
 

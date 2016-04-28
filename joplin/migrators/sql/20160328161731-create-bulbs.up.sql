@@ -30,10 +30,34 @@ DECLARE
   fk_value integer;
   record record;
 BEGIN
-  IF NEW.vote = 1 THEN
-    counter_name = 'upvotes_count';
-  ELSEIF NEW.vote = -1 THEN
-    counter_name = 'downvotes_count';
+  IF TG_OP = 'UPDATE' OR TG_OP = 'INSERT' THEN
+    IF NEW.vote = 1 THEN
+      IF table_name = 'replies' THEN
+        counter_name = 'upvotes_count';
+      ELSEIF table_name = 'users' THEN
+        counter_name = 'upvotes_given_count';
+      END IF;
+    ELSEIF NEW.vote = -1 THEN
+      IF table_name = 'replies' THEN
+        counter_name = 'downvotes_count';
+      ELSEIF table_name = 'users' THEN
+        counter_name = 'downvotes_given_count';
+      END IF;
+    END IF;
+  ELSEIF TG_OP = 'DELETE' THEN
+    IF OLD.vote = 1 THEN
+      IF table_name = 'replies' THEN
+        counter_name = 'upvotes_count';
+      ELSEIF table_name = 'users' THEN
+        counter_name = 'upvotes_given_count';
+      END IF;
+    ELSEIF OLD.vote = -1 THEN
+      IF table_name = 'replies' THEN
+        counter_name = 'downvotes_count';
+      ELSEIF table_name = 'users' THEN
+        counter_name = 'downvotes_given_count';
+      END IF;
+    END IF;
   END IF;
 
   IF TG_OP = 'UPDATE' THEN
@@ -67,8 +91,8 @@ FOR EACH ROW
 EXECUTE PROCEDURE votes_counter_cache('replies', 'reply_id');
 --;;
 
--- CREATE TRIGGER trg_users_votes_counter
--- AFTER INSERT OR UPDATE OR DELETE ON bulbs
--- FOR EACH ROW
--- EXECUTE PROCEDURE votes_counter_cache('users', 'user_id');
+CREATE TRIGGER trg_users_votes_counter
+AFTER INSERT OR UPDATE OR DELETE ON bulbs
+FOR EACH ROW
+EXECUTE PROCEDURE votes_counter_cache('users', 'user_id');
 --;;

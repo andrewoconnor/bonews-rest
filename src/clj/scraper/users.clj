@@ -1,5 +1,6 @@
 (ns clj.scraper.users
-  (:require [clj.scraper.utils :as utils]
+  (:require [clj.queries :as queries]
+            [clj.scraper.utils :as utils]
             [clj.scraper.signatures :as sig]
             [net.cgrand.enlive-html :as html]
             [clojure.string :as str]))
@@ -52,4 +53,6 @@
   (let [table (get-users-table (get-users-list page-num))
         rows  (utils/get-rows table)
         users (map get-user rows)]
-    users))
+    (try (map queries/create-user! users) (catch Exception e (.getNextException e)))))
+
+;(map queries/create-user! users)
