@@ -57,4 +57,4 @@
   (let [reply-div  (get-reply-div reply-url)
         msg        (get-message reply-div)
         signature  (sig/get-signature-by-id user-id)]
-    (strip-breaks (str/replace msg signature ""))))
+    (strip-breaks (str/replace msg (or signature "")  ""))))

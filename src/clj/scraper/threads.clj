@@ -129,23 +129,22 @@
      :users   (set users)
      :parents parents}))
 
-(defn get-parent
-  [parents indent]
-  (get parents (dec indent)))
+(defn get-parent-indent-level
+  [replies]
+  (dec (first (keys (:parents replies)))))
 
-(defn add-parent
-  [curr parent]
-  (let [replies (assoc (first (:replies curr)) :parent parent)
-        ncurr   (assoc curr :replies (vec (list replies)))]
-    ncurr))
+(defn get-parent
+  [thread replies]
+  (get (:parents thread) (get-parent-indent-level replies)))
+
+(defn get-reply-with-parent
+  [thread replies]
+  (let [parent (get-parent thread replies)]
+    (assoc-in replies [:replies 0 :parent] parent)))
 
 (defn get-thread-data
-  [new-map curr]
-  (let [parents (:parents new-map)
-        indent  (ffirst (:parents curr))
-        parent  (get-parent parents indent)
-        ncurr   (add-parent curr parent)]
-    (merge-with into new-map ncurr)))
+  [thread replies]
+  (merge-with into thread (get-reply-with-parent thread replies)))
 
 (defn get-data-by-url
   [url]
