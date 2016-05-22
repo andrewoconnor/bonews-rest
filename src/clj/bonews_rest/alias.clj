@@ -1,4 +1,4 @@
-(ns clj.alias
+(ns bonews-rest.alias
   (:require [clojure.java.io :as io]
             [joplin.repl :as repl]))
 

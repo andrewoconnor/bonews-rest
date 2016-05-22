@@ -1,5 +1,5 @@
-(ns clj.scraper.signatures
-  (:require [clj.scraper.utils :as utils]
+(ns bonews-rest.scraper.signatures
+  (:require [bonews-rest.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
             [clj-webdriver.taxi :as web]
             [clojure.string :as str]))

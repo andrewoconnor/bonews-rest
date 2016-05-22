@@ -1,5 +1,5 @@
-(ns clj.scraper.subforums
-  (:require [clj.scraper.utils :as utils]
+(ns bonews-rest.scraper.subforums
+  (:require [bonews-rest.scraper.utils :as utils]
             [net.cgrand.enlive-html :as html]
             [guangyin.core :as t]
             [guangyin.format :as f]

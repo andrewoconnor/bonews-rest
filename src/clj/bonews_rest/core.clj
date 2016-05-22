@@ -1,6 +1,6 @@
-(ns clj.core
+(ns bonews-rest.core
   (:gen-class)
-  (:require [clj.alias :refer [load-config]]
+  (:require [bonews-rest.alias :refer [load-config]]
             [clojure.java.io :as io]
             [joplin.repl :as repl
              :refer [migrate rollback seed reset create pending]]

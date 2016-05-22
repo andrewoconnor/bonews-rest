@@ -1,7 +1,7 @@
-(ns clj.scraper.users
+(ns bonews-rest.scraper.users
   (:require [clj.queries :as queries]
-            [clj.scraper.utils :as utils]
-            [clj.scraper.signatures :as sig]
+            [bonews-rest.scraper.utils :as utils]
+            [bonews-rest.scraper.signatures :as sig]
             [net.cgrand.enlive-html :as html]
             [clojure.string :as str]))
 

@@ -1,4 +1,4 @@
-(ns clj.queries
+(ns bonews-rest.queries
   (:require [yesql.core :refer [defqueries]]))
 
 (def dev-pghost (System/getenv "DEV_PGHOST"))

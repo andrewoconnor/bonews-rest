@@ -1,11 +1,11 @@
-(ns clj.scraper.threads
+(ns bonews-rest.scraper.threads
   (:use [clj-webdriver.driver :only [init-driver]])
-  (:require [clj.scraper.utils :as utils]
-            [clj.scraper.replies :as replies]
-            [clj.scraper.bulbs :as bulbs]
+  (:require [bonews-rest.scraper.utils :as utils]
+            [bonews-rest.scraper.replies :as replies]
+            [bonews-rest.scraper.bulbs :as bulbs]
             [net.cgrand.enlive-html :as html]
-            [guangyin.core :as t]
-            [guangyin.format :as f]
+            [guangyin.core :as date-time]
+            [guangyin.format :as fdt]
             [clojure.string :as str]
             [clj-webdriver.taxi :as web]
             [clojure.set :refer [union]]
@@ -20,7 +20,7 @@
 
 (def link-label [:h4 [:a (html/attr? :href)]])
 
-(def bo-time-formatter (f/date-time-formatter "MMMM dd, yyyy hh:mma"))
+(def bo-time-formatter (fdt/date-time-formatter "MMMM dd, yyyy hh:mma"))
 
 (def phantomjs-path (System/getenv "PHANTOMJS_PATH"))
 
@@ -30,9 +30,8 @@
   (str url-prefix subforum-id "," thread-id))
 
 (defn get-replies-table
-  [thread-url]
-  (-> thread-url
-      (utils/fetch-url)
+  [page]
+  (-> page
       (html/select [:div#phorum :> :table.list])
       first))
 
@@ -66,17 +65,7 @@
         last
         (:content)
         first
-        (t/local-date-time bo-time-formatter)))
-
-(defn get-reply-user
-  [cols]
-  (let [user-url (utils/get-user-url cols)
-        user-id  (utils/get-user-id user-url)
-        username (utils/get-username cols)]
-    (list
-      {:id   user-id
-       :name username
-       :url  user-url})))
+        (date-time/local-date-time bo-time-formatter)))
 
 (defn get-thread-id
   [reply-url]
@@ -97,36 +86,42 @@
       (Integer/parseInt)
       (/ 10)))
 
-(defn get-reply-data
-  [reply-url cols id bulbs]
-  (let [user    (get-reply-user cols)
-        user-id (get (first user) :id)
-        reply   {:id      id
-                 :title   (get-reply-title cols)
-                 :message (replies/get-reply-data reply-url user-id)
-                 :time    (get-reply-post-time cols)
-                 :user    (:id (first user))}
-        bulbs   (dissoc bulbs :users)]
-    (if (empty? bulbs)
-      {:reply reply
-       :user  user}
-      {:reply (assoc reply :bulbs bulbs)
-       :user  user})))
+(defn get-reply-user
+  [user-id username]
+  {:id   user-id
+   :name username})
 
-(defn get-reply
+;(defn get-reply
+;  [id title message time user-id bulbs parent]
+;  {:id      id
+;   :title   title
+;   :message message
+;   :time    time
+;   :user    user-id
+;   :bulbs   bulbs
+;   :parent  parent})
+
+(defn get-thread-instance
   [row]
-  (let [cols      (utils/get-cols row)
-        reply-url (get-reply-url cols)
-        id        (get-reply-id reply-url)
-        indent    (get-indent-level cols)
-        bulbs     (bulbs/get-data reply-url)
-        rdata     (get-reply-data reply-url cols id bulbs)
-        reply     (:reply rdata)
-        user      (:user rdata)
-        users     (into (:users bulbs) user)
-        parents   {indent id}]
+  (let [cols        (utils/get-cols row)
+        user-url    (utils/get-user-url cols)
+        user-id     (utils/get-user-id user-url)
+        username    (utils/get-username cols)
+        user        (get-reply-user user-id username)
+        reply-url   (get-reply-url cols)
+        reply-id    (get-reply-id reply-url)
+        title       (get-reply-title cols)
+        message     (replies/get-reply-data reply-url user-id)
+        time        (get-reply-post-time cols)
+        bulbs-data  (bulbs/get-data reply-url)
+        users       (:users bulbs-data)
+        bulbs       (dissoc bulbs-data :users)
+        parent      nil
+        reply       (struct replies/reply reply-id title message time user-id bulbs parent)
+        indent      (get-indent-level cols)
+        parents     {indent (:id reply)}]
     {:replies (vec (list reply))
-     :users   (set users)
+     :users   (set (into users (list user)))
      :parents parents}))
 
 (defn get-parent-indent-level
@@ -148,10 +143,11 @@
 
 (defn get-data-by-url
   [url]
-  (let [table     (get-replies-table url)
+  (let [page      (utils/fetch-url url)
+        table     (get-replies-table page)
         rows      (utils/get-rows table)
         thread-id (get-thread-id url)
-        replies   (map get-reply rows)
+        replies   (map get-thread-instance rows)
         thread    (reduce get-thread-data {} replies)]
     thread))
 

@@ -1,6 +1,6 @@
 (ns seeds.sql
     (:require [clojure.java.jdbc :as j]
-              [clj.utils.lorem_ipsum :as lorem]))
+              [bonews-rest.utils.lorem_ipsum :as lorem]))
 
 (defn run [target & args]
   (j/with-db-connection [db {:connection-uri (-> target :db :url)}]
@@ -43,8 +43,8 @@
                                                       :thread_id thread-id
                                                       :user_id 42
                                                       :parent_id (if (= id 1234) nil (dec id))
-                                                      :title (first (lorem/random-sentence))
-                                                      :message (first (lorem/random-paragraph))})
+                                                      :title (lorem/random-sentence)
+                                                      :message (lorem/random-paragraph)})
                               (recur (inc id)))))
 
 

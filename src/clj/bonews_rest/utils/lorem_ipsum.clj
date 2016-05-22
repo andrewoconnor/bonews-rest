@@ -1,4 +1,4 @@
-(ns clj.utils.lorem_ipsum
+(ns bonews-rest.utils.lorem_ipsum
   (:require [clojure.string :as string]))
 
 (def lorem-ipsum
@@ -8,13 +8,13 @@
   (string/split lorem-ipsum #"(?<=[.?]) "))
 
 (defn random-sentence
-  ([] (random-sentence 1))
+  ([] (first (random-sentence 1)))
   ([n] (take n (repeatedly #(nth sentences (rand-int (count sentences)))))))
 
 (defn random-word
-  ([] (random-word 1))
-  ([n] (take n (string/split (first (random-sentence)) #"[, ]"))))
+  ([] (first (random-word 1)))
+  ([n] (take n (string/split (random-sentence) #"[, ]"))))
 
 (defn random-paragraph
-  ([] (random-paragraph 1))
+  ([] (first (random-paragraph 1)))
   ([n] (take n (repeatedly #(string/join \space (random-sentence 5))))))

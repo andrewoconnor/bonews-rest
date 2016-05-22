@@ -13,25 +13,25 @@
                  [joplin.core "0.3.5"]
                  [joplin.jdbc "0.3.5"]
                  [org.postgresql/postgresql "9.4-1201-jdbc4"]]
-  :main ^:skip-aot clj.core
+  :main ^:skip-aot bonews-rest.core
   :target-path "target/%s"
-  :source-paths ["src" "joplin"]
+  :source-paths ["src/clj" "joplin"]
   :resource-paths ["joplin"]
   :profiles {:uberjar {:aot :all}}
-  :injections [(require 'clj.alias)
-               (require 'clj.queries)
-               (require 'clj.scraper.utils)
-               (require 'clj.scraper.forums)
-               (require 'clj.scraper.subforums)
-               (require 'clj.scraper.threads)
-               (require 'clj.scraper.replies)
-               (require 'clj.scraper.bulbs)
-               (require 'clj.scraper.users)
-               (require 'clj.scraper.signatures)
-               (require 'clj.utils.lorem-ipsum)]
-  :aliases {"migrate" ["run" "-m" "clj.alias/migrate"]
-            "seed" ["run" "-m" "clj.alias/seed"]
-            "rollback" ["run" "-m" "clj.alias/rollback"]
-            "reset" ["run" "-m" "clj.alias/reset"]
-            "pending" ["run" "-m" "clj.alias/pending"]
-            "create" ["run" "-m" "clj.alias/create"]})
+  ;:injections [(require 'clj.alias)
+  ;             (require 'clj.queries)
+  ;             (require 'clj.scraper.utils)
+  ;             (require 'clj.scraper.forums)
+  ;             (require 'clj.scraper.subforums)
+  ;             (require 'clj.scraper.threads)
+  ;             (require 'clj.scraper.replies)
+  ;             (require 'clj.scraper.bulbs)
+  ;             (require 'clj.scraper.users)
+  ;             (require 'clj.scraper.signatures)
+  ;             (require 'clj.utils.lorem-ipsum)]
+  :aliases {"migrate" ["run" "-m" "bonews-rest.alias/migrate"]
+            "seed" ["run" "-m" "bonews-rest.alias/seed"]
+            "rollback" ["run" "-m" "bonews-rest.alias/rollback"]
+            "reset" ["run" "-m" "bonews-rest.alias/reset"]
+            "pending" ["run" "-m" "bonews-rest.alias/pending"]
+            "create" ["run" "-m" "bonews-rest.alias/create"]})
