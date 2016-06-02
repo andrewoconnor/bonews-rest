@@ -1,7 +1,11 @@
 -- name: create-reply!
--- Inserts a new user into the users table
-INSERT INTO replies (id, thread_id, user_id, parent_id, title, message)
-VALUES (:id, :thread_id, :user_id, :parent_id, :title, :message);
+-- Inserts a new reply into the replies table
+INSERT INTO replies (id, thread_id, user_id, parent_id, title, message, post_time)
+VALUES (:id, :thread_id, :user_id, :parent_id, :title, :message, :post_time)
+ON CONFLICT (id)
+DO UPDATE SET
+  title = EXCLUDED.title,
+  message = EXCLUDED.message;
 
 -- name: get-replies
 -- Gets replies of a particular user with limit and offset

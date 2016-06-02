@@ -1,7 +1,12 @@
 -- name: create-user!
 -- Inserts a new user into the users table
 INSERT INTO users (id, username, signature, nt_reply_url)
-VALUES (:id, :username, :signature, :nt_reply_url);
+VALUES (:id, :username, :signature, :nt_reply_url)
+ON CONFLICT (id)
+DO UPDATE SET
+  username = EXCLUDED.username,
+  signature = EXCLUDED.signature,
+  nt_reply_url = EXCLUDED.nt_reply_url;
 
 -- name: get-signature
 -- Gets signature of a particular user

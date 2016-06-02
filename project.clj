@@ -12,11 +12,14 @@
                  [yesql "0.5.1"]
                  [joplin.core "0.3.5"]
                  [joplin.jdbc "0.3.5"]
-                 [org.postgresql/postgresql "9.4-1201-jdbc4"]]
+                 [org.postgresql/postgresql "9.4-1201-jdbc4"]
+                 [http-kit "2.1.18"]
+                 [bidi "2.0.9"]
+                 [reagent "0.6.0-alpha2"]]
   :main ^:skip-aot bonews-rest.core
   :target-path "target/%s"
-  :source-paths ["src/clj" "joplin"]
-  :resource-paths ["joplin"]
+  :source-paths ["src/clj" "src/sql" "joplin"]
+  :resource-paths ["joplin" "resources/templates"]
   :profiles {:uberjar {:aot :all}}
   ;:injections [(require 'clj.alias)
   ;             (require 'clj.queries)

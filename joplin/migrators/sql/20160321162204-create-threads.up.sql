@@ -1,6 +1,7 @@
 CREATE TABLE threads (
   id               INT UNIQUE NOT NULL,
   subforum_id      INT NOT NULL REFERENCES subforums(id),
+  user_id          INT NOT NULL REFERENCES users(id),
   replies_count    SMALLINT NOT NULL DEFAULT 0,
   created_at       TIMESTAMP DEFAULT current_timestamp,
   updated_at       TIMESTAMP

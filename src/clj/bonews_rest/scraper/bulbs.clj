@@ -61,33 +61,31 @@
   (let [user-id (get-user-id list-item)]
     {
       :id    user-id
-      :name  (get-username list-item)
-      :url   (get-user-url user-id)
-    }))
+      :username  (get-username list-item)
+     }))
 
 (defn get-user-data
   [upvotes-list downvotes-list]
-  (set (into
-         (map user-data-helper (get-list-items upvotes-list))
-         (map user-data-helper (get-list-items downvotes-list)))))
+  (set
+    (into
+      (map user-data-helper (get-list-items upvotes-list))
+      (map user-data-helper (get-list-items downvotes-list)))))
 
 (defn get-user-ids
   [ulist]
   (seq (map get-user-id (get-list-items ulist))))
 
 (defn get-votes-data
-  [reply-page]
-  (let [upvotes-list    (get-upvotes-list reply-page)
-        downvotes-list  (get-downvotes-list reply-page)]
-    {
-      :upvotes {
-        :users (get-user-ids upvotes-list)
-      }
-      :downvotes {
-        :users (get-user-ids downvotes-list)
-      }
-      :users (get-user-data upvotes-list downvotes-list)
-    }))
+  [reply-url reply-id]
+  (let [reply-page      (get-page-source reply-url)
+        upvotes-list    (get-upvotes-list reply-page)
+        downvotes-list  (get-downvotes-list reply-page)
+        upvotes-users   (get-user-ids upvotes-list)
+        downvotes-users (get-user-ids downvotes-list)
+        upvotes         (map #(assoc {:reply_id reply-id :vote 1} :user_id %) upvotes-users)
+        downvotes       (map #(assoc {:reply_id reply-id :vote -1} :user_id %) downvotes-users)]
+    {:bulbs (into upvotes downvotes)
+     :users (get-user-data upvotes-list downvotes-list)}))
 
 (defn has-bulbs?
   [reply-url]
@@ -97,14 +95,13 @@
       (empty?)))
 
 (defn get-data-helper
-  [reply-url]
+  [reply-url reply-id]
   (if (has-bulbs? reply-url)
     nil
     (-> reply-url
-        get-page-source
-        get-votes-data
-        utils/remove-nils)))
+        (get-votes-data reply-id)
+        (utils/remove-nils))))
 
 (defn get-data
-  [reply-url]
-  (utils/try-times 3 (get-data-helper reply-url)))
+  [reply-url reply-id]
+  (utils/try-times 3 (get-data-helper reply-url reply-id)))

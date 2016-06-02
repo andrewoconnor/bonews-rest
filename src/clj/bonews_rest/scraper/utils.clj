@@ -1,7 +1,9 @@
 (ns bonews-rest.scraper.utils
   (:require [net.cgrand.enlive-html :as html]
             [clojure.string :as str]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk])
+  (:import  [java.sql Timestamp]
+            [java.time ZoneId]))
 
 (def link-href [[:a (html/attr? :href)]])
 (def link-label [:h4 [:a (html/attr? :href)]])
@@ -82,6 +84,13 @@
       :when (seq data)]
     data)))
 
+(defn ldt-to-timestamp
+  [ldt]
+  (Timestamp/from
+    (.toInstant
+      (.atZone
+        ldt
+        (ZoneId/of "Etc/UTC")))))
 
 (defn try-times*
   "Executes thunk. If an exception is thrown, will retry. At most n retries

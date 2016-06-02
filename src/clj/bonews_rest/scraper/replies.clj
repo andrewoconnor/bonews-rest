@@ -6,8 +6,6 @@
             [guangyin.format :as f]
             [clojure.string :as str]))
 
-(defstruct reply :id :title :message :time :user :bulbs :parent)
-
 (defn get-reply-div
   [reply-url]
   (-> reply-url
@@ -85,6 +83,6 @@
         message    (strip-unmatched-html-tags (strip-breaks (strip-edited-x-times msg)))
         signature  (sig/get-signature-by-id user-id)
         multi-strip (strip-breaks (stripper signature message))]
-    (if (and (= (count multi-strip) (count msg)) signature)
-      (strip-breaks (str/replace msg (or signature "")  ""))
+    (if (and (= (count multi-strip) (count message)) signature)
+      (strip-breaks (str/replace message (or signature "")  ""))
       multi-strip)))

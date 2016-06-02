@@ -5,6 +5,7 @@ CREATE TABLE replies (
   parent_id        INT REFERENCES replies(id),
   title            TEXT NOT NULL,
   message          TEXT,
+  post_time        TIMESTAMP,
   upvotes_count    SMALLINT NOT NULL DEFAULT 0,
   downvotes_count  SMALLINT NOT NULL DEFAULT 0,
   created_at       TIMESTAMP DEFAULT current_timestamp,

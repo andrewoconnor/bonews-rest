@@ -4,11 +4,11 @@
 
 (defn run [target & args]
   (j/with-db-connection [db {:connection-uri (-> target :db :url)}]
-                        (j/insert! db :users {:id 1 :username "test1"})
-                        (j/insert! db :users {:id 42 :username "test42"})
-                        (j/insert! db :users {:id 41 :username "test40"})
-                        (j/insert! db :users {:id 23 :username "airjordan23"})
-
+                        ;(j/insert! db :users {:id 1 :username "test1"})
+                        ;(j/insert! db :users {:id 42 :username "test42"})
+                        ;(j/insert! db :users {:id 41 :username "test40"})
+                        ;(j/insert! db :users {:id 23 :username "airjordan23"})
+                        ;
                         (j/insert! db :subforums {:id 7 :name "Off Topic News"})
                         (j/insert! db :subforums {:id 8 :name "Breaking News"})
                         (j/insert! db :subforums {:id 9 :name "Sports"})
@@ -33,21 +33,21 @@
                         (j/insert! db :subforums {:id 33 :name "Health & Beauty"})
                         (j/insert! db :subforums {:id 34 :name "The World"})
                         (j/insert! db :subforums {:id 35 :name "Horseshit!"})
-
-                        (j/insert! db :threads {:id 1234 :subforum_id 12})
-
-                        (let [thread-id 1234]
-                          (loop [id 1234]
-                            (when (< id 1254)
-                              (j/insert! db :replies {:id id
-                                                      :thread_id thread-id
-                                                      :user_id 42
-                                                      :parent_id (if (= id 1234) nil (dec id))
-                                                      :title (lorem/random-sentence)
-                                                      :message (lorem/random-paragraph)})
-                              (recur (inc id)))))
-
-
-                        (j/insert! db :bulbs {:reply_id 1234 :user_id 1 :vote 1})
-                        (j/insert! db :bulbs {:reply_id 1234 :user_id 41 :vote -1})
+                        ;
+                        ;(j/insert! db :threads {:id 1234 :subforum_id 12 :user_id 1})
+                        ;
+                        ;(let [thread-id 1234]
+                        ;  (loop [id 1234]
+                        ;    (when (< id 1254)
+                        ;      (j/insert! db :replies {:id id
+                        ;                              :thread_id thread-id
+                        ;                              :user_id 42
+                        ;                              :parent_id (if (= id 1234) nil (dec id))
+                        ;                              :title (lorem/random-sentence)
+                        ;                              :message (lorem/random-paragraph)})
+                        ;      (recur (inc id)))))
+                        ;
+                        ;
+                        ;(j/insert! db :bulbs {:reply_id 1234 :user_id 1 :vote 1})
+                        ;(j/insert! db :bulbs {:reply_id 1234 :user_id 41 :vote -1})
                         ))

@@ -12,6 +12,7 @@
                   :subname dev-subname
                   :user dev-pguser})
 
-(defqueries "sql/users.sql" {:connection dev-db-spec})
-
-(defqueries "sql/replies.sql" {:connection dev-db-spec})
+(defqueries "users.sql" {:connection dev-db-spec})
+(defqueries "threads.sql" {:connection dev-db-spec})
+(defqueries "replies.sql" {:connection dev-db-spec})
+(defqueries "bulbs.sql" {:connection dev-db-spec})

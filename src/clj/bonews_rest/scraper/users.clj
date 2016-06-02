@@ -1,5 +1,5 @@
 (ns bonews-rest.scraper.users
-  (:require [clj.queries :as queries]
+  (:require [bonews-rest.queries :as queries]
             [bonews-rest.scraper.utils :as utils]
             [bonews-rest.scraper.signatures :as sig]
             [net.cgrand.enlive-html :as html]
@@ -53,6 +53,4 @@
   (let [table (get-users-table (get-users-list page-num))
         rows  (utils/get-rows table)
         users (map get-user rows)]
-    (try (map queries/create-user! users) (catch Exception e (.getNextException e)))))
-
-;(map queries/create-user! users)
+    users))
