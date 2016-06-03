@@ -1,24 +1,6 @@
 (ns bonews-rest.templates.thread
-  (require [net.cgrand.enlive-html :as html]))
-
-(defn get-thread-title
-  [thread]
-  (:title (first (:replies thread))))
-
-(defn get-username-by-id
-  [thread]
-  (let [main-reply (first (:replies thread))
-        author-id  (:user_id main-reply)
-        users      (:users thread)
-        author     (first (filter #(= (:id %) author-id) users))]
-    (:username author)))
-
-(html/deftemplate thread-page "thread.html"
-  [thread]
-  [:title] (html/content (get-thread-title thread))
-  [:h1] (html/content (get-thread-title thread))
-  [:span.author] (html/content (get-username-by-id thread))
-  [:div.thread-body] (html/content (:message (first (:replies thread)))))
+  (require [net.cgrand.enlive-html :as html]
+           [clojure.string :as str]))
 
 (def sample-thread
   {:thread {:id 560002, :subforum_id 13, :user_id 538},
@@ -113,3 +95,27 @@
            {:id 515, :username "Redshirt", :signature nil, :nt_reply_url nil}
            {:id 28, :username "Oh No", :signature nil, :nt_reply_url nil}
            {:id 226, :username "SharoKham", :signature nil, :nt_reply_url nil}]})
+
+(defn get-username
+  [reply users]
+  (let [author-id  (:user_id reply)
+        author     (first (filter #(= (:id %) author-id) users))]
+    (:username author)))
+
+(html/defsnippet reply-snippet "_reply.html" [:div.reply]
+  [reply users]
+  [:div.reply-title] (html/content (:title reply))
+  [:span.user] (html/content (get-username reply users))
+  [:div.reply-message] (html/html-content (:message reply)))
+
+(html/defsnippet thread-snippet "_thread.html" [:div.thread]
+  [thread]
+  [:ul [:li]]
+  (let [users (:users thread)
+        replies (:replies thread)]
+    (html/clone-for [reply replies]
+      [:li] (html/html-content (reduce str (html/emit* (reply-snippet reply users)))))))
+
+(html/deftemplate threads-page "home.html"
+  []
+  [:body] (html/html-content (reduce str (html/emit* (first (thread-snippet sample-thread))))))
