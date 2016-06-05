@@ -4,10 +4,13 @@
 
 
 (defn mount! []
-  (reset! items (-> 10 range vec))
   (rum/mount (my-comp) (.getElementById js/document "app")))
+
+(defn init! []
+  (reset! items (-> 10 range vec))
+  (mount!))
 
 (.addEventListener
   js/window
   "DOMContentLoaded"
-  mount!)
+  init!)

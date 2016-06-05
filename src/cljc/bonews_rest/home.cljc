@@ -5,8 +5,11 @@
 
 (defonce items (atom (vec nil)))
 
+(rum/defc item [i] [:li i])
+
 (rum/defc item-list [items]
-          [:ul (repeat (count items) [:li "word up"])])
+          [:ul (for [x (range (count items))]
+                 (rum/with-key (item x) x))])
 
 (rum/defc my-comp []
           [:div [:h2 "Welcome to serverside react"]

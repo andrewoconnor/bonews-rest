@@ -23,8 +23,7 @@
       [:body
        [:div#app
         (rum/render-html home-page)]
-        (include-js "js/app.js")
-        (include-js)]]))
+        (include-js "js/app.js")]]))
 
 (defn thread-handler
   [request]
