@@ -15,11 +15,23 @@
                  [org.postgresql/postgresql "9.4-1201-jdbc4"]
                  [http-kit "2.1.18"]
                  [bidi "2.0.9"]
+                 [hiccup "1.0.5"]
+                 [rum "0.9.0"]
+                 [org.clojure/clojurescript "1.9.14"]
                  [reagent "0.6.0-alpha2"]]
+  :plugins [[lein-cljsbuild "1.1.3"]]
+  :clean-targets ^{:protect false} [:target-path
+                                    [:cljsbuild :builds :app :compiler :output-dir]
+                                    [:cljsbuild :builds :app :compiler :output-to]]
   :main ^:skip-aot bonews-rest.core
-  :target-path "target/%s"
-  :source-paths ["src/clj" "src/sql" "joplin"]
-  :resource-paths ["joplin" "resources/templates"]
+  :source-paths ["src/clj" "src/cljc" "src/sql" "joplin"]
+  :resource-paths ["joplin" "resources/templates" "target/cljsbuild"]
+  :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
+                             :compiler {:output-to "target/cljsbuild/public/js/app.js"
+                                        :output-dir "target/cljsbuild/public/js/out"
+                                        :asset-path   "js/out"
+                                        :optimizations :whitespace
+                                        :pretty-print  true}}}}
   :profiles {:uberjar {:aot :all}}
   ;:injections [(require 'clj.alias)
   ;             (require 'clj.queries)
