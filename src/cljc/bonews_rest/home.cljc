@@ -1,8 +1,8 @@
 (ns bonews-rest.home
   (:require
-    #?@(:clj [[rum.core :as rum]
-              [ajax.core :as ajax]
-              [clojure.core.async :as async]]
+    #?@(:clj  [[rum.core :as rum]
+               [ajax.core :as ajax]
+               [clojure.core.async :as async]]
         :cljs [[rum.core :as rum]
                [ajax.core :as ajax]
                [cljs.core.async :as async]])))
@@ -13,23 +13,29 @@
   [:span])
 
 (rum/defc reply-item
-  [reply]
+  [reply user]
   [:li
-   [:div
-    [:span (get reply "id")]]])
+   [:div.reply
+    [:div.user (get user "username")]
+    [:div.post_time (get reply "post_time")]
+    [:div.title (get reply "title")]
+    [:div.message (get reply "message")]]])
 
 (rum/defc replies-list
-  [replies]
-  [:ul
-   (for [reply replies]
-     (rum/with-key (reply-item reply) (get reply "id")))])
+  [state]
+  (let [replies (get state "replies")
+        users   (get state "users")
+        bulbs   (get state "bulbs")]
+    [:ul
+     (for [reply replies
+           :let [id   (get reply "id")
+                 user (first (filter #(= (get % "id") (get reply "user_id")) users))]]
+       (rum/with-key (reply-item reply user) id))]))
 
-(rum/defc my-comp < rum/static
+(rum/defc my-comp
   [state]
   [:div [:h2 "Welcome to serverside react"]
-   (replies-list (get state "replies"))])
-
-(def home-page (my-comp @thread))
+   (replies-list state)])
 
 (defn- on-change-thread-state
   [_kwd _the-atom _old-state new-state]
@@ -38,3 +44,9 @@
      :clj nil))
 
 (add-watch thread :main on-change-thread-state)
+
+(defn get-thread []
+  (ajax/GET "http://localhost:3000/api"
+            {:handler (fn [response] (reset! thread response))}))
+
+#?(:cljs (js/setInterval get-thread 5000))

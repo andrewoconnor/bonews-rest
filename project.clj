@@ -17,6 +17,7 @@
                  [http-kit "2.1.18"]
                  [bidi "2.0.9"]
                  [hiccup "1.0.5"]
+                 [hiccups "0.3.0"]
                  [rum "0.9.0"]
                  [org.clojure/clojurescript "1.9.14"]
                  [cheshire "5.6.1"]

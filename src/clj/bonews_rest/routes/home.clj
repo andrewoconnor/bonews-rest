@@ -1,7 +1,6 @@
 (ns bonews-rest.routes.home
   (:use org.httpkit.server)
-  (:require [bonews-rest.templates.thread :as thread]
-            [bonews-rest.home :refer [home-page thread]]
+  (:require [bonews-rest.home :refer [my-comp thread]]
             [bidi.ring :refer [make-handler resources-maybe]]
             [bidi.bidi :as bidi]
             [ring.util.response :refer [response content-type]]
@@ -16,7 +15,7 @@
   (read-string
     (slurp "resources/sample_thread.edn")))
 
-(reset! thread {"replies" [{"id" 1} {"id" 2} {"id" 3}]})
+(reset! thread (parse-string (generate-string sample-thread)))
 
 (def loading-page
   (html
@@ -27,7 +26,7 @@
               :content "width=device-width, initial-scale=1"}]]
      [:body
       [:div#app
-       (rum/render-html home-page)]
+       (rum/render-html (my-comp @thread))]
       (include-js "/js/app.js")]]))
 
 (def not-found-page
