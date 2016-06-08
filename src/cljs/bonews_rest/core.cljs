@@ -1,16 +1,14 @@
 (ns bonews-rest.core
   (:require [rum.core :as rum]
-            [bonews-rest.home :refer [items my-comp]]))
+            [bonews-rest.home :refer [my-comp thread]]))
 
 
-(defn mount! []
-  (rum/mount (my-comp) (.getElementById js/document "app")))
+(reset! thread {"replies" [{"id" 1} {"id" 2} {"id" 3} {"id" 4}]})
 
-(defn init! []
-  (reset! items (-> 10 range vec))
-  (mount!))
-
-(.addEventListener
-  js/window
-  "DOMContentLoaded"
-  init!)
+;(defn mount! []
+;  (rum/mount (my-comp thread) (.getElementById js/document "app")))
+;
+;(.addEventListener
+;  js/window
+;  "DOMContentLoaded"
+;  mount!)

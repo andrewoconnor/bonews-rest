@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [org.clojure/core.async "0.2.374"]
                  [enlive "1.1.6"]
                  [guangyin "0.3.0"]
                  [org.seleniumhq.selenium/selenium-java "2.48.2"]
@@ -18,7 +19,8 @@
                  [hiccup "1.0.5"]
                  [rum "0.9.0"]
                  [org.clojure/clojurescript "1.9.14"]
-                 [reagent "0.6.0-alpha2"]]
+                 [cheshire "5.6.1"]
+                 [cljs-ajax "0.5.5"]]
   :plugins [[lein-cljsbuild "1.1.3"]]
   :clean-targets ^{:protect false} [:target-path
                                     [:cljsbuild :builds :app :compiler :output-dir]
