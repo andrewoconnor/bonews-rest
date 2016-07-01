@@ -19,6 +19,8 @@
       (html/at [:form] nil)
       first
       (html/at [:div.message-options] nil)
+      first
+      (html/at [:script] nil)
       last))
 
 (defn strip-msg-body-tags

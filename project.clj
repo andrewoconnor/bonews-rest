@@ -3,10 +3,13 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.2.374"]
+                 [org.clojure/tools.namespace "0.2.11"]
                  [enlive "1.1.6"]
+                 [enfocus "2.1.1"]
                  [guangyin "0.3.0"]
+                 [clj-time "0.12.0"]
                  [org.seleniumhq.selenium/selenium-java "2.48.2"]
                  [com.github.detro/phantomjsdriver "1.2.0"]
                  [clj-webdriver "0.7.2"]
@@ -19,16 +22,17 @@
                  [hiccup "1.0.5"]
                  [hiccups "0.3.0"]
                  [rum "0.9.0"]
-                 [org.clojure/clojurescript "1.9.14"]
+                 [org.clojure/clojurescript "1.9.89"]
                  [cheshire "5.6.1"]
-                 [cljs-ajax "0.5.5"]]
+                 [cljs-ajax "0.5.5"]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]]
   :plugins [[lein-cljsbuild "1.1.3"]]
   :clean-targets ^{:protect false} [:target-path
                                     [:cljsbuild :builds :app :compiler :output-dir]
                                     [:cljsbuild :builds :app :compiler :output-to]]
   :main ^:skip-aot bonews-rest.core
   :source-paths ["src/clj" "src/cljc" "src/sql" "joplin"]
-  :resource-paths ["joplin" "resources/templates" "target/cljsbuild"]
+  :resource-paths ["joplin" "resources" "target/cljsbuild"]
   :cljsbuild {:builds {:app {:source-paths ["src/cljs" "src/cljc"]
                              :compiler {:output-to "target/cljsbuild/public/js/app.js"
                                         :output-dir "target/cljsbuild/public/js/out"

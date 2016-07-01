@@ -23,7 +23,8 @@
      [:head
       [:meta {:charset "utf-8"}]
       [:meta {:name "viewport"
-              :content "width=device-width, initial-scale=1"}]]
+              :content "width=device-width, initial-scale=1"}]
+      (include-css "/app.css")]
      [:body
       [:div#app
        (rum/render-html (my-comp @thread))]

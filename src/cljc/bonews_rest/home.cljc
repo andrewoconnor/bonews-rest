@@ -1,25 +1,50 @@
 (ns bonews-rest.home
+  #?(:cljs (:require-macros [enfocus.macros :as em]))
   (:require
-    #?@(:clj  [[rum.core :as rum]
+    #?@(:clj  [[net.cgrand.enlive-html :as html]
+               [rum.core :as rum]
                [ajax.core :as ajax]
-               [clojure.core.async :as async]]
-        :cljs [[rum.core :as rum]
+               [clojure.core.async :as async]
+               [clojure.string :as str]
+               [clj-time.core :as timec]
+               [clj-time.format :as timef]]
+        :cljs [[enfocus.core :as html]
+               [rum.core :as rum]
                [ajax.core :as ajax]
-               [cljs.core.async :as async]])))
+               [cljs.core.async :as async]
+               [clojure.string :as str]
+               [cljs-time.core :as timec]
+               [cljs-time.format :as timef]])))
 
 (defonce thread (atom {}))
 
 (rum/defc user []
   [:span])
 
+(defn post-time
+  [reply]
+  (let [timestamp (get reply "post_time")]
+    #?(:cljs (timef/unparse (timef/formatter "MMM dd YYYY, h:mm A")
+                            (timef/parse (timef/formatters :date-time-no-ms)
+                                         timestamp))
+       :clj (timef/unparse (timef/formatter "MMM dd YYYY, h:mm aa")
+                           (timef/parse (:date-time-no-ms timef/formatters)
+                                        timestamp)))))
+
 (rum/defc reply-item
   [reply user]
   [:li
    [:div.reply
-    [:div.user (get user "username")]
-    [:div.post_time (get reply "post_time")]
-    [:div.title (get reply "title")]
-    [:div.message (get reply "message")]]])
+    [:div.reply_header
+     [:div.reply_header_left
+      [:span.user (get user "username")]
+      [:div.bulbs
+       [:div.green_bulbs 61]
+       [:div.red_bulbs 2]]]
+     [:div.post_time (post-time reply)]]
+    [:div.title
+     [:span.title_text (get reply "title")]]
+     [:div.message {:dangerouslySetInnerHTML {:__html (get reply "message")}}]]])
 
 (rum/defc replies-list
   [state]
