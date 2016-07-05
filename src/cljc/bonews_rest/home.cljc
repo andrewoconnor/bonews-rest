@@ -17,9 +17,19 @@
                [cljs-time.format :as timef]])))
 
 (defonce thread (atom {}))
+(defonce selected-reply (atom int))
 
-(rum/defc user []
-  [:span])
+(defn get-user
+  [obj users]
+  (first (filter #(= (get % "id") (get obj "user_id")) users)))
+
+(defn get-votes
+  [reply bulbs]
+  (let [votes (filter #(= (get % "reply_id") (get reply "id")) bulbs)
+        upvotes (filter #(= (get % "vote") 1) votes)
+        downvotes (filter #(= (get % "vote") -1) votes)]
+    {:upvotes upvotes
+     :downvotes downvotes}))
 
 (defn post-time
   [reply]
@@ -32,19 +42,28 @@
                                         timestamp)))))
 
 (rum/defc reply-item
-  [reply user]
-  [:li
-   [:div.reply
-    [:div.reply_header
-     [:div.reply_header_left
-      [:span.user (get user "username")]
-      [:div.bulbs
-       [:div.green_bulbs 61]
-       [:div.red_bulbs 2]]]
-     [:div.post_time (post-time reply)]]
-    [:div.title
-     [:span.title_text (get reply "title")]]
-     [:div.message {:dangerouslySetInnerHTML {:__html (get reply "message")}}]]])
+  [reply users bulbs]
+  (let [user (get-user reply users)
+        votes (get-votes reply bulbs)]
+    [:li
+     [:div.reply
+      [:div.reply_header
+       [:div.reply_header_left
+        [:span.user (get user "username")]
+        (if (pos? (count votes))
+          [:div.bulbs
+           (if (pos? (count (:upvotes votes)))
+             [:div.green_bulbs (count (:upvotes votes))]
+             nil)
+           (if (pos? (count (:downvotes votes)))
+             [:div.red_bulbs (count (:downvotes votes))]
+             nil)]
+          nil)]
+       [:div.post_time (post-time reply)]]
+      [:div.title (get reply "title")]
+      (if (str/blank? (get reply "message"))
+        nil
+        [:div.message {:dangerouslySetInnerHTML {:__html (get reply "message")}}])]]))
 
 (rum/defc replies-list
   [state]
@@ -53,9 +72,8 @@
         bulbs   (get state "bulbs")]
     [:ul
      (for [reply replies
-           :let [id   (get reply "id")
-                 user (first (filter #(= (get % "id") (get reply "user_id")) users))]]
-       (rum/with-key (reply-item reply user) id))]))
+           :let [id   (get reply "id")]]
+       (rum/with-key (reply-item reply users bulbs) id))]))
 
 (rum/defc my-comp
   [state]
